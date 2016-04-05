@@ -35,7 +35,9 @@ This directory (i.e. folder) contains data files that we have modified. In addit
 
 ## References:
 
-#### Code / ML Tutorials:
+Here are various references and tutorials for machine learning algorithms, Twitter data analysis in R, and various sentiment analysis in R (and some in Python).
+
+#### Twitter R Tutorials:
 
 * [Twitter - R Tutorial 1](http://www.r-bloggers.com/analyze-twitter-data-using-r/)
 * [Twitter - R Tutorial 2](https://sivaanalytics.wordpress.com/2013/10/10/sentiment-analysis-on-twitter-data-using-r-part-i/)
@@ -43,6 +45,22 @@ This directory (i.e. folder) contains data files that we have modified. In addit
 * [Twitter - R Tutorial 4](http://www.r-bloggers.com/getting-started-with-twitter-analysis-in-r/)
 * [Twitter - R Tutorial 5](http://www.inside-r.org/howto/mining-twitter-airline-consumer-sentiment)
 * [Twitter - R Tutorial 6](https://silviaplanella.wordpress.com/2014/12/31/sentiment-analysis-twitter-and-r/)
+
+#### TF-IDF Tutorials:
+
+Term frequency - inverse document frequency. Frequencies of words are offset by their global frequencies. So it is finding the relative frequency of words.
+
+* [Wiki Overview](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
+* [Conceptual Tutorial](http://www.tfidf.com/)
+* [Conceptual + Code Tutorial R](http://www.r-bloggers.com/build-a-search-engine-in-20-minutes-or-less/)
+* [Step by Step Tutorial on Text Mining in R](http://www.slideshare.net/whitish/textmining-with-r)
+
+#### Bag-of-Words Tutorials:
+
+* [Wiki Overview](https://en.wikipedia.org/wiki/Bag-of-words_model)
+* [Great R Tutorial on sentiment analysis in a Kaggle Competition](https://drive.google.com/file/d/0B_sqyEYBKc1wVm4xN0NvQlJlNWc/view)
+* [Kaggle Python Tutorial](https://www.kaggle.com/c/word2vec-nlp-tutorial/details/part-1-for-beginners-bag-of-words)
+* [Python Tutorial](http://fastml.com/classifying-text-with-bag-of-words-a-tutorial/)
 
 #### Academic Papers / Articles:
 

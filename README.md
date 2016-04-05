@@ -31,9 +31,20 @@ This directory also contains the <strong>TrainTest.RData</strong> given from the
 
 #### data-mod-log
 
-This directory (i.e. folder) contains data files that we have modified. In addition, it contains a markdown file that has a written description of all of the modifications / changes we have made or algorithms we have attempted (with results / insight). 
+This directory (i.e. folder) contains data files that we have modified. In addition, it contains a markdown file that has a written description of all of the modifications / changes we have made or algorithms we have attempted (with results / insight).
 
 ## References:
+
+#### Code / ML Tutorials:
+
+* [Twitter - R Tutorial 1](http://www.r-bloggers.com/analyze-twitter-data-using-r/)
+* [Twitter - R Tutorial 2](https://sivaanalytics.wordpress.com/2013/10/10/sentiment-analysis-on-twitter-data-using-r-part-i/)
+* [Twitter - R Tutorial 3](https://www.cdata.com/kb/tech/twitter-odbc-r.rst)
+* [Twitter - R Tutorial 4](http://www.r-bloggers.com/getting-started-with-twitter-analysis-in-r/)
+* [Twitter - R Tutorial 5](http://www.inside-r.org/howto/mining-twitter-airline-consumer-sentiment)
+* [Twitter - R Tutorial 6](https://silviaplanella.wordpress.com/2014/12/31/sentiment-analysis-twitter-and-r/)
+
+#### Academic Papers / Articles:
 
 * [Sample link to paper](http://)
 

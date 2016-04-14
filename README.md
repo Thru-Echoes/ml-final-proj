@@ -4,6 +4,33 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 
 <strong>NOTE:</strong> this is a private competition.
 
+## Dependencies:
+
+```
+    install.packages("devtools")
+    devtools::install_github("DataComputing/DataComputing")
+```
+
+## To-Do & Predictor Ideas:
+
+#### April 13:
+
+- [ ] Oliver: pos. occurances @ / # extract - 1k tweets
+- [ ] Oliver: neg. occurances @ / # extract - 1k tweets
+- [ ] Oliver: (same as above for 10k tweets)
+- [ ] Oliver: save above data as .RData in repo
+- [ ] Paul: write up how to use supercomputer cluster doc.
+- [ ] Paul: write script to add character length as new predictor
+- [ ] Chris: come up / write up way to pull out emoticons
+- [ ] Chris: come up / write up way to pull out special characters
+
+#### Ideas for Predictors:
+
+* normalize pos. user occurances and then add as posUserOccurance predictor to data
+* (same as above for neg. occurances)
+* add precitor column that is some combination of pos. and neg. user predictors
+* add predictor for character length of tweet
+
 ## Orrganization:
 
 #### README.md
@@ -45,6 +72,8 @@ Here are various references and tutorials for machine learning algorithms, Twitt
 * [Twitter - R Tutorial 4](http://www.r-bloggers.com/getting-started-with-twitter-analysis-in-r/)
 * [Twitter - R Tutorial 5](http://www.inside-r.org/howto/mining-twitter-airline-consumer-sentiment)
 * [Twitter - R Tutorial 6](https://silviaplanella.wordpress.com/2014/12/31/sentiment-analysis-twitter-and-r/)
+* [Twitter - R - create word cloud + text cleanup](https://www.credera.com/blog/business-intelligence/twitter-analytics-using-r-part-2-create-word-cloud/)
+* [Twitter - R - create word cloud + text cleanup 2](https://sites.google.com/site/miningtwitter/questions/talking-about/given-users)
 
 #### TF-IDF Tutorials:
 

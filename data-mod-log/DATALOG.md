@@ -15,7 +15,7 @@ Keep track of all changes in this markdown file as shown below:
     nKaggle <- nrows(fromKaggle)
     # = 1349 total
 ```
-How many from Kaggle$Sentiment = -1, 1, 0?  
+How many from Kaggle$Sentiment = -1, 1, 0?
 
 -1 (no score) = 41
 0 (negative score) = 604
@@ -30,7 +30,7 @@ How many from Kaggle$Sentiment = -1, 1, 0?
     s140.pos <- s140[s140$Sentiment == 1, ]
 ```
 
-How many from s140$Sentiment = -1, 1, 0?  
+How many from s140$Sentiment = -1, 1, 0?
 
 -1 (no score) = 49959
 0 (negative score) = 762896
@@ -261,4 +261,76 @@ Now pull out # events
     getExtracted$hashMatches[[5]][1]
 ```
 
-#### Try pulling out @ and # with 1k, 10k, and 100k tweets
+## April 14:
+
+#### Pull out @ and # for all neg and all pos
+
+<strong>NOTE: this takes under a minute to run...</strong>
+
+```
+    load("data/raw.RData")
+    RawNeg.df = raw.data[raw.data$Sentiment == 0, ]
+    RawPos.df = raw.data[raw.data$Sentiment == 1, ]
+    RawNegTweet = as.character(RawNeg.df[ , 4])
+    RawPosTweet = as.character(RawPos.df[ , 4])
+
+    extractNeg <- data.frame(RawNegTweet)
+    # dim = 763500 tweets
+    allExtractNeg <- extractNeg %>% mutate(atMatches = str_extract_all(RawNegTweet, "(\\B@[[:alnum:]_]+)"), hashMatches = str_extract_all(RawNegTweet, "(\\B#[[:alnum:]_]+)"))
+
+    extractPos <- data.frame(RawPosTweet)
+    # dim = 765127 tweets
+    allExtractPos <- extractPos %>% mutate(atMatches = str_extract_all(RawPosTweet, "(\\B@[[:alnum:]_]+)"), hashMatches = str_extract_all(RawPosTweet, "(\\B#[[:alnum:]_]+)"))
+
+    head(allExtractNeg)
+    head(allExtractPos)
+```
+
+Write out files:
+
+```
+    # write(allExtractNeg, "data/all-extract-neg")
+    # write(allExtractPos, "data/all-extract-pos")
+```
+
+<hr>
+
+<strong>And other way to extract just user occurance data:</strong>
+
+```
+    negTest = str_extract_all(string = NegTweet.OneString, pattern = "(\\B@[[:alnum:]_]+)")
+    posTest = str_extract_all(string = PosTweet.OneString, pattern = "(\\B@[[:alnum:]_]+)")
+
+    negTest.vec = negTest[[1]] #Convert test into a character vector.
+    posTest.vec = posTest[[1]] #Convert test into a character vector.
+
+    uniqueNegUsers = unique(negTest.vec) #Find the unique usernames.
+    uniquePosUsers = unique(posTest.vec) #Find the unique usernames.
+    nNeg = length(uniqueNegUsers)
+    nPos = length(uniquePosUsers)
+    uniqueNegOccurance = rep(NA, times = nNeg)
+    uniquePosOccurance = rep(NA, times = nPos)
+
+    for (i in 1:nNeg) {
+        uniqueNegOccurance[i] = sum(negTest.vec == uniqueNegUsers[i])
+        print(i / nNeg) #Progress: done when it reaches 1.
+    }
+
+    for (i in 1:nPos) {
+        uniquePosOccurance[i] = sum(posTest.vec == uniquePosUsers[i])
+        print(i / nPos) #Progress: done when it reaches 1.
+    }
+```
+
+With code above - write out and read in file:
+
+```
+    write(uniqueNegUsers, "data/unique-neg-users")
+    write(uniqueNegOccurance, "data/unique-neg-occur")
+
+    write(uniquePosUsers, "data/unique-pos-users")
+    write(uniquePosOccurance, "data/unique-pos-occur")
+
+    # read in
+    sampleNegUsers <- read.table(file.choose())
+```

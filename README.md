@@ -13,16 +13,29 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 
 ## To-Do & Predictor Ideas:
 
+#### April 18: predictor / column ideas
+
+- [ ] Create normalized word count of tweets
+- [ ] Create normalized word count of modified tweets (e.g. after extracting only meaningful words)
+- [ ] Create normalized character count of tweets
+- [ ] Create normalized character count of modified tweets (e.g. after extracting only meaningful words)
+- [ ] Create normalized positive occurrences of '@' usernames
+- [ ] Create normalized negative occurrences of '@' usernames
+- [ ] Create normalized positive occurrences of '#' hashtags
+- [ ] Create normalized negative occurrences of '#' hashtags
+- [ ] Create normalized positive occurrences of emoticons
+- [ ] Create normalized negative occurrences of emoticons
+
 #### April 13:
 
-- [ ] Oliver: pos. occurances @ / # extract - 1k tweets
-- [ ] Oliver: neg. occurances @ / # extract - 1k tweets
-- [ ] Oliver: (same as above for 10k tweets)
+- [x] Oliver: pos. occurances @ / # extract - 1k tweets
+- [x] Oliver: neg. occurances @ / # extract - 1k tweets
+- [x] Oliver: (same as above for 10k tweets)
 - [ ] Oliver: save above data as .RData in repo
 - [ ] Paul: write up how to use supercomputer cluster doc.
-- [ ] Paul: write script to add character length as new predictor
-- [ ] Chris: come up / write up way to pull out emoticons
-- [ ] Chris: come up / write up way to pull out special characters
+- [x] Paul: write script to add character length as new predictor
+- [x] Chris: come up / write up way to pull out emoticons
+- [x] Chris: come up / write up way to pull out special characters
 
 #### Ideas for Predictors:
 
@@ -63,6 +76,12 @@ This directory (i.e. folder) contains data files that we have modified. In addit
 ## References:
 
 Here are various references and tutorials for machine learning algorithms, Twitter data analysis in R, and various sentiment analysis in R (and some in Python).
+
+#### Text Analysis Files:
+
+* [Emoticons and smiley faces in various ways](https://gist.github.com/endolith/157796#file-single-character-faces-txt-L98)
+* [Emoticon and special character removal](http://stackoverflow.com/questions/12807176/php-writing-a-simple-removeemoji-function)
+* [Emoticon and special character removal part. 2](http://stackoverflow.com/questions/12013341/removing-characters-of-a-specific-unicode-range-from-a-string)
 
 #### Twitter R Tutorials:
 

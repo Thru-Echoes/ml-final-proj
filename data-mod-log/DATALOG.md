@@ -70,7 +70,7 @@ Stop words from this package:
 
 ## Change on April 13:
 
-### Getting unique occurance & IDs
+### Getting unique occurrences & IDs
 
 <strong>These are only for negative tweets!</strong>
 
@@ -85,10 +85,10 @@ Stop words from this package:
     negTest.vec = negTest[[1]] #Convert test into a character vector.
     UniqueUsers = unique(negTest.vec) #Find the unique usernames.
     n = length(UniqueUsers)
-    UniqueOccurance = rep(NA, times = n)
+    UniqueOccurrence = rep(NA, times = n)
 
     for (i in 1:n) {
-        UniqueOccurance[i] = sum(negTest.vec == UniqueUsers[i])
+        UniqueOccurrence[i] = sum(negTest.vec == UniqueUsers[i])
         print(i / n) #Progress: done when it reaches 1.
     }
 ```
@@ -96,7 +96,7 @@ Stop words from this package:
 Make dataframe and check it out!
 
 ```
-    histDF <- data.frame(occur = UniqueOccurance, user = UniqueUsers)
+    histDF <- data.frame(occur = UniqueOccurrence, user = UniqueUsers)
 ```
 
 Some print outs (THESE ARE NEGATIVE SENTIMENTS):
@@ -295,7 +295,7 @@ Write out files:
 
 <hr>
 
-<strong>And other way to extract just user occurance data:</strong>
+<strong>And other way to extract just user Occurrence data:</strong>
 
 ```
     negTest = str_extract_all(string = NegTweet.OneString, pattern = "(\\B@[[:alnum:]_]+)")
@@ -308,16 +308,16 @@ Write out files:
     uniquePosUsers = unique(posTest.vec) #Find the unique usernames.
     nNeg = length(uniqueNegUsers)
     nPos = length(uniquePosUsers)
-    uniqueNegOccurance = rep(NA, times = nNeg)
-    uniquePosOccurance = rep(NA, times = nPos)
+    uniqueNegOccurrence = rep(NA, times = nNeg)
+    uniquePosOccurrence = rep(NA, times = nPos)
 
     for (i in 1:nNeg) {
-        uniqueNegOccurance[i] = sum(negTest.vec == uniqueNegUsers[i])
+        uniqueNegOccurrence[i] = sum(negTest.vec == uniqueNegUsers[i])
         print(i / nNeg) #Progress: done when it reaches 1.
     }
 
     for (i in 1:nPos) {
-        uniquePosOccurance[i] = sum(posTest.vec == uniquePosUsers[i])
+        uniquePosOccurrence[i] = sum(posTest.vec == uniquePosUsers[i])
         print(i / nPos) #Progress: done when it reaches 1.
     }
 ```
@@ -326,11 +326,82 @@ With code above - write out and read in file:
 
 ```
     write(uniqueNegUsers, "data/unique-neg-users")
-    write(uniqueNegOccurance, "data/unique-neg-occur")
+    write(uniqueNegOccurrence, "data/unique-neg-occur")
 
     write(uniquePosUsers, "data/unique-pos-users")
-    write(uniquePosOccurance, "data/unique-pos-occur")
+    write(uniquePosOccurrence, "data/unique-pos-occur")
 
     # read in
     sampleNegUsers <- read.table(file.choose())
+```
+
+## Change on April 18:
+
+Using Chris's <code>getPattern()</code> in <code>sample-r/getPattern.R</code>. A screenshot of the distribution of positive emoticons in all of the positive tweets.
+
+#### Extracting occurrences of positive emoticons in positive tweets
+
+<strong>NOTE: </strong> there are roughly 760k positive tweets.
+
+```
+    load("data/raw.RData")
+    RawPos.df = raw.data[raw.data$Sentiment == 1, ]
+    RawNeg.df = raw.data[raw.data$Sentiment == 0, ]
+    posEmo_posTweets <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = "[:;][-]?[)D]+|[(]+[-]?[:;]", pat.name = "positive emoticon")
+    hist(posEmo_posTweets[, 6])
+```
+
+Here is the distribution of positive emoticons in the positive tweets:
+
+```
+    summary(as.factor(posEmo_posTweets[, 6]))
+    #####      0      1      2      3      4      5      6
+    ##### 757384   7563    169      8      1      1      1
+```
+
+#### Potential positive and negative emoticons
+
+Positive (from online): <code>((:|;|8)+(-)*(\)|D|P|p)+)|((\()+(-)*(:|;)+)</code>
+
+Negative (from online): <code>((:)+(-|')*(\()+)|((\))+(-)*(:|;)+)</code>
+
+Positive (translated): <code>[:;8][-']?[)DPp]+|[(][-']?[8;:]</code>
+
+Negative (translated): <code> </code>
+
+```
+    posPattern1 <- "[:;][-]?[)D]+|[(]+[-]?[:;]"
+    posPattern2 <- "[:;8][-']?[)DPp]+|[(][-']?[8;:]"
+```
+
+#### Extracting occurrences of negative emoticons in negative tweets
+
+```
+    posEmo_negTweets <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = "[:;][-]?[)D]+|[(]+[-]?[:;]", pat.name = "positive emoticon")
+```
+
+#### Extracting negative emoticons in positive tweets
+
+```
+    negEmo_posTweets <-
+```
+
+#### Extracting positive emoticons in negative tweets
+
+Using 1st pattern:
+
+```
+    posEmo_negTweets_1 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern1, pat.name = "positive emoticon")
+    summary(as.factor(posEmo_negTweets_1[, 6]))
+    ####      0      1      2      3      4     10
+    #### 758809   4570    103     14      3      1
+```
+
+Using 2nd pattern:
+
+```
+    # posPattern2 <- "((:|;|8)+(-)*(\)|D|P|p)+)|((\()+(-)*(:|;)+)"
+    posPattern2 <- "[:;8][-']?[)DPp]+|[(][-']?[8;:]"
+    posEmo_negTweets_2 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern2, pat.name = "positive emoticon")
+    summary(as.factor(posEmo_negTweets_2[, 6]))
 ```

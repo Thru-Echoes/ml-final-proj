@@ -365,13 +365,26 @@ Positive (from online): <code>((:|;|8)+(-)*(\)|D|P|p)+)|((\()+(-)*(:|;)+)</code>
 
 Negative (from online): <code>((:)+(-|')*(\()+)|((\))+(-)*(:|;)+)</code>
 
-Positive (translated): <code>[:;8][-']?[)DPp]+|[(][-']?[8;:]</code>
+<strong>NOTE: see the <code>sample-r/extractEmoPattern.R</code> file / script for information and code to run the following.</strong>
 
-Negative (translated): <code> </code>
+Positive (translated): <code>[:;8][-']?[)DPp]+|[(][-']?[8;:]...</code>
+
+Negative (translated): <code>...</code>
+
+### Positive Emoticon Patterns:
 
 ```
     posPattern1 <- "[:;][-]?[)D]+|[(]+[-]?[:;]"
-    posPattern2 <- "[:;8][-']?[)DPp]+|[(][-']?[8;:]"
+    posPattern2 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]"
+    posPattern3 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]|[\\^][_\\.\\*-]*[\\^]|[-][_\\.]*[-]"
+```
+
+### Negative Emoticon Patterns:
+
+```
+    negPattern1 <- "[:][-]*[(]+|[ ]"
+    negPattern2 <- "[>]*[:8][-']*[(]"
+    negPattern3 <- ""
 ```
 
 #### Extracting occurrences of negative emoticons in negative tweets
@@ -383,7 +396,8 @@ Negative (translated): <code> </code>
 #### Extracting negative emoticons in positive tweets
 
 ```
-    negEmo_posTweets <-
+    negEmo_posTweets <- ...
+    # see sample-r/extractEmoPattern.R file / script for information and code
 ```
 
 #### Extracting positive emoticons in negative tweets
@@ -400,8 +414,7 @@ Using 1st pattern:
 Using 2nd pattern:
 
 ```
-    # posPattern2 <- "((:|;|8)+(-)*(\)|D|P|p)+)|((\()+(-)*(:|;)+)"
-    posPattern2 <- "[:;8][-']?[)DPp]+|[(][-']?[8;:]"
+    # posPattern2 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]"
     posEmo_negTweets_2 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern2, pat.name = "positive emoticon")
     summary(as.factor(posEmo_negTweets_2[, 6]))
 ```

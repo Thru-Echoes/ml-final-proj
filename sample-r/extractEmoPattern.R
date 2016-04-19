@@ -63,13 +63,13 @@ summary(as.factor(negEmo_posTweets_2[, 6]))
 ## Positive Emoticon x Negative Tweets
 #
 #### Pattern 1
-summary(as.factor(negEmo_posTweets_1[, 6]))
+summary(as.factor(posEmo_negTweets_1[, 6]))
 
 #### Pattern 2
-summary(as.factor(negEmo_posTweets_2[, 6]))
+summary(as.factor(posEmo_negTweets_2[, 6]))
 
 #### Pattern 3
-summary(as.factor(negEmo_posTweets_3[, 6]))
+summary(as.factor(posEmo_negTweets_3[, 6]))
 
 #############################
 ## Negative Emoticon x Negative Tweets

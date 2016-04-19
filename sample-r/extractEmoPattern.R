@@ -7,11 +7,12 @@
 ### Positive Emoticon Patterns:
 posPattern1 <- "[:;][-]?[)D]+|[(]+[-]?[:;]"
 posPattern2 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]"
-posPattern3 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]|[^][_.\\*-]*[^]|[-][_.]*[-]"
+posPattern3 <- "[:;8][-']?[)DPp]+|[(]+[-']?[8:;]|[\\^][_\\.\\*-]*[\\^]|[-][_\\.]*[-]"
 
 ### Negative Emoticon Patterns:
-negPattern1 <- ""
-negPattern2 <- ""
+negPattern1 <- "[:][-]?[(]+|[)]+[-]?[:]"
+negPattern2 <- "[>]*[:8][-']*[(]+|[)]+[-']*[:8][<]*"
+#negPattern3 <- ""
 
 ###############################################################################################
 # Code
@@ -20,9 +21,24 @@ negPattern2 <- ""
 
 posEmo_posTweets_1 <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = posPattern1, pat.name = "positive emoticon")
 posEmo_posTweets_2 <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = posPattern2, pat.name = "positive emoticon")
+posEmo_posTweets_3 <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = posPattern3, pat.name = "positive emoticon")
 
 ### Negative Emoticons + Positive Tweets:
 
+negEmo_posTweets_1 <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = negPattern1, pat.name = "negative emoticon")
+negEmo_posTweets_2 <- getPattern(data = RawPos.df, sub.index = 1:nrow(RawPos.df), char.col = 4, pattern = negPattern2, pat.name = "negative emoticon")
+
 ### Positive Emoticons + Negative Tweets:
 
+posEmo_negTweets_1 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern1, pat.name = "positive emoticon")
+posEmo_negTweets_2 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern2, pat.name = "positive emoticon")
+posEmo_negTweets_3 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern3, pat.name = "positive emoticon")
+
 ### Negative Emoticons + Negative Tweets:
+
+negEmo_negTweets_1 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = negPattern1, pat.name = "negative emoticon")
+negEmo_negTweets_1 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = negPattern1, pat.name = "negative emoticon")
+
+###############################################################################################
+# Distributions of Emoticons
+###############################################################################################

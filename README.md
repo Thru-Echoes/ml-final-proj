@@ -13,7 +13,9 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 
 ## To-Do & Predictor Ideas:
 
-#### April 18: predictor / column ideas
+### April 18
+
+#### Predictor Ideas:
 
 - [ ] Create normalized word count of tweets
 - [ ] Create normalized word count of modified tweets (e.g. after extracting only meaningful words)
@@ -25,26 +27,29 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 - [ ] Create normalized negative occurrences of '#' hashtags
 - [ ] Create normalized positive occurrences of emoticons
 - [ ] Create normalized negative occurrences of emoticons
+- [ ] Create column that is sentiment value per tweet from Bag-of-words
 
-#### April 13:
+And more...
+- [ ] Linear combination of normalized positive and normalized negative username / hashtag occurrences
+- [ ] Create a few special columns for occurrence of most-negative or most-positive usernames / hashtags <strong>(see below)</strong>
+- [ ] 
 
-- [x] Oliver: pos. occurances @ / # extract - 1k tweets
-- [x] Oliver: neg. occurances @ / # extract - 1k tweets
-- [x] Oliver: (same as above for 10k tweets)
-- [ ] Oliver: save above data as .RData in repo
-- [ ] Paul: write up how to use supercomputer cluster doc.
-- [x] Paul: write script to add character length as new predictor
-- [x] Chris: come up / write up way to pull out emoticons
-- [x] Chris: come up / write up way to pull out special characters
+For example: top 3 usernames that appear with negative tweets may have thousands of occurrences and the 4th most popular negative username may be only 20 occurrences. We could create 3 special columns, one per top username of negative tweets, and each tweet has a <code>1</code> in that column if that username appears.
 
-#### Ideas for Predictors:
+#### To-Do:
 
-* normalize pos. user occurances and then add as posUserOccurance predictor to data
-* (same as above for neg. occurances)
-* add precitor column that is some combination of pos. and neg. user predictors
-* add predictor for character length of tweet
+- [ ] Oliver: create 3 positive and 3 negative emoticon patterns
+- [ ] Oliver: run above 6 emoticon patterns on both positive and negative tweets
+- [ ]
+- [ ] Paul: write code to create normalized
+- [ ] Paul:
+- [ ]
+- [ ] Chris: create code to pull out laughing and other non-language components
+- [ ] Chris:
 
-## Orrganization:
+<hr>
+
+## Organization:
 
 #### README.md
 

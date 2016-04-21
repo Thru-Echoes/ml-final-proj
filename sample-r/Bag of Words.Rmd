@@ -1,0 +1,193 @@
+---
+title: "Term Frequency from the Corpus"
+author: "Chris Lin"
+date: "April 20, 2016"
+output: pdf_document
+---
+This report explores how to use the idea of bag of words to create more features in our Tweet sentiment analysis.
+```{r}
+##Load the data
+# Set the directory
+setwd("/Users/Chris/Desktop/Berkeley/Academic Semesters/2016 Spring/Stat154_Machine Learning/Final Project/Data") 
+
+load("RawPos_5000df.RData")
+load("RawNeg_5000df.RData")
+RawDF_10000 = rbind(RawNeg.5000df, RawPos.5000df)
+```
+
+```{r}
+##Clean the data
+# Remove punctuation and convert everything to lowercase
+RawDF_10000$CleanedText = tolower(gsub("[[:punct:]]", "", RawDF_10000$SentimentText))
+```
+
+```{r}
+##Split the data into a training and testing set
+set.seed(1)
+train.index = sample(1:nrow(RawDF_10000), size = nrow(RawDF_10000) * 0.6)
+
+trainDF = RawDF_10000[train.index, ]
+testDF = RawDF_10000[-train.index, ]
+```
+
+```{r}
+##Construct a corpus using the training data
+library(tm)
+trainCorpus = Corpus(VectorSource(trainDF$CleanedText))
+
+##Construct a term frequency matrix
+# tf matrix does not use the stop words or numbers
+# a list of stop words can be found at 
+# http://jmlr.csail.mit.edu/papers/volume5/lewis04a/a11-smart-stop-list/english.stop
+stopWords = readLines("http://jmlr.csail.mit.edu/papers/volume5/lewis04a/a11-smart-stop-list/english.stop")
+
+tf = DocumentTermMatrix(trainCorpus, control = list(stopwords = stopwords("english"), removeNumbers = TRUE))
+
+# Only include words that occur in at least 1% of the data
+tf = removeSparseTerms(tf, 0.99)
+
+# Convert to dense matrix for analysis
+tf = as.matrix(tf)
+```
+
+```{r}
+##Construct a word frequency data frame of the 1% most-used words in the training data
+# Sum up the columns to find the occurrences of each word in the corpus
+wordFreq = colSums(tf)
+wordFreqDF = data.frame(word = colnames(tf), freq = wordFreq)
+rownames(wordFreqDF) = NULL
+```
+
+```{r}
+##Summary of most frequent terms
+head(wordFreqDF[order(wordFreq, decreasing = TRUE), ])
+```
+
+Next, we aim to build features on words that occur more often in positive Tweets than in negative Tweets (and vice versa). 
+The problem with using the most frequent words is that some words commonly appear in both positive and negative Tweets. Here, we aim to solve this issue using the normalized difference sentiment index.
+```{r}
+##Write a function to get the word frequency data frame
+getWordFreqDF = function(DocumentVec, sparsity, stopwords){
+  # Construct corpus
+  tempCorpus = Corpus(VectorSource(DocumentVec))
+  
+  # Construct TF matrix and remove sparse terms
+  tempTF = DocumentTermMatrix(tempCorpus, 
+                              control = list(stopwords = stopwords("english"), 
+                                             removeNumbers = TRUE))
+  tempTF = removeSparseTerms(tempTF, sparsity)
+  tempTF = as.matrix(tempTF)
+  
+  freqWord = colSums(tempTF)
+  freqWordDF = data.frame(word = names(freqWord), freq = freqWord)
+  rownames(freqWordDF) = NULL
+  
+  return(freqWordDF)
+}
+```
+
+```{r}
+##Get the word frequency data frame for both the training positive and negative Tweets
+wordFreqDF.pos = getWordFreqDF(DocumentVec = trainDF[trainDF$Sentiment == 1, "CleanedText"], sparsity = 0.999, stopwords = stopWords)
+
+wordFreqDF.neg = getWordFreqDF(DocumentVec = trainDF[trainDF$Sentiment == 0, "CleanedText"], sparsity = 0.999, stopwords = stopWords)
+
+##Summary of most frequent terms
+head(wordFreqDF.pos[order(wordFreqDF.pos$freq, decreasing = TRUE), ])
+head(wordFreqDF.neg[order(wordFreqDF.neg$freq, decreasing = TRUE), ])
+```
+
+```{r}
+##Merge the two data frames
+wordFreqDF.all = merge(wordFreqDF.pos, wordFreqDF.neg, by = "word", all = TRUE)
+
+# Set the column names and set the NAs to 0s.
+colnames(wordFreqDF.all) = c("word", "freqPos", "freqNeg")
+wordFreqDF.all$freqPos[is.na(wordFreqDF.all$freqPos)] = 0
+wordFreqDF.all$freqNeg[is.na(wordFreqDF.all$freqNeg)] = 0
+
+# Compute the difference in postive and negative frequency
+wordFreqDF.all$diff = abs(wordFreqDF.all$freqPos - wordFreqDF.all$freqNeg)
+```
+
+```{r}
+##Summary of the words with larger difference in positive and negative frequency
+head(wordFreqDF.all[order(wordFreqDF.all$diff, decreasing = TRUE), ])
+```
+
+```{r}
+library(stringr)
+getPattern = function(data, sub.index, char.col, pattern, pat.name){
+  sub.data = data.frame(data[sub.index, ]) #subset the data frame.
+  char.vec = as.character(sub.data[ , char.col]) #get the character strings.
+  matched.list = apply(X = as.matrix(char.vec), MARGIN = 1, 
+                       FUN = str_extract_all, pattern = pattern) 
+  #list of matched pattern(s) for each character string. 
+  
+  sub.data[ , ncol(sub.data) + 1] = rep(NA, times = nrow(sub.data))
+  sub.data[ , ncol(sub.data) + 1] = rep(0, times = nrow(sub.data))
+  #add two columns.
+  
+  n.col = ncol(sub.data) #number of columns in the augmented data frame.
+  
+  colnames(sub.data)[n.col - 1] = pat.name
+  colnames(sub.data)[n.col] = paste(pat.name, "count")
+  #change the names of the additional two columns.
+  
+  for (i in 1:nrow(sub.data)){
+    num.matched = length(matched.list[[i]][[1]])
+    if (num.matched > 0){
+      sub.data[i, n.col - 1] = matched.list[i]
+      sub.data[i, n.col] = num.matched
+      #if there is at least one match (num.matched > 0), 
+      #record the list of the matched patterns and the number of matches.
+    }
+  }
+  return(sub.data)
+}
+```
+
+```{r}
+##Find the word count of the 20 "important" words in the training and testing set.
+n = 20
+importantWords = wordFreqDF.all$word[order(wordFreqDF.all$diff, decreasing = TRUE)[1:n]]
+importantWords = as.character(importantWords)
+
+for (i in 1:n){
+  trainDF = getPattern(data = trainDF, sub.index = 1:nrow(trainDF), char.col = 5,
+                       pattern = importantWords[i], pat.name = importantWords[i])
+  testDF = getPattern(data = testDF, sub.index = 1:nrow(testDF), char.col = 5,
+                       pattern = importantWords[i], pat.name = importantWords[i])
+}
+
+# Clean up 
+trainCleanedDF = data.frame(Sentiment = trainDF$Sentiment, 
+                            trainDF[ , seq(from = 7, to = ncol(trainDF), by = 2)])
+BOW_trainCleanedDF = trainCleanedDF
+
+testCleanedDF = data.frame(Sentiment = testDF$Sentiment, 
+                            testDF[ , seq(from = 7, to = ncol(trainDF), by = 2)])
+BOW_testCleanedDF = testCleanedDF
+# Save those two data frames for analysis
+setwd("/Users/Chris/Desktop/Berkeley/Academic Semesters/2016 Spring/Stat154_Machine Learning/Final Project/Data")
+save(BOW_trainCleanedDF, file = "BOW_trainCleanDF.RData")
+save(BOW_testCleanedDF, file = "BOW_testCleanDF.RData")
+```
+
+```{r}
+##Try using random forest to do prediction and assess the accuracy
+library(randomForest)
+set.seed(1)
+forestModel = randomForest(x = as.matrix(BOW_trainCleanedDF[ , -1]), y = as.factor(BOW_trainCleanedDF[ , 1]), mtry = 10, ntree = 100)
+
+forestPre = predict(forestModel, as.matrix(BOW_testCleanedDF[ , -1]))
+forestAccur = sum(forestPre == as.factor(BOW_testCleanedDF[ , 1])) / length(BOW_testCleanedDF[ , 1])
+# The accuracy is 0.63675
+```
+
+Here, we compute the normalized difference sentiment index. See Sentiment Analysis and Text Mining “Bag of Words Meets Bags of Popcorn“ A Quick R Demonstration by John Koo for the formula. 
+```{r}
+
+```
+
+

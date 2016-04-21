@@ -1,8 +1,8 @@
 suppressMessages(library(dplyr))
 suppressMessages(library(stringr))
 
-vocab <- scan("vocab.txt", what="character", sep="\n", encoding="latin1")
-raw.data <- read.csv("MaskedDataRawFixed.csv", header=TRUE)
+vocab <- scan("../data/vocab.txt", what="character", sep="\n", encoding="latin1")
+load("../data/raw.RData")
 
 raw.data$SentimentText <- as.character(raw.data$SentimentText)
 

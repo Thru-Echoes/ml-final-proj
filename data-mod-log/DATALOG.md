@@ -418,3 +418,100 @@ Using 2nd pattern:
     posEmo_negTweets_2 <- getPattern(data = RawNeg.df, sub.index = 1:nrow(RawNeg.df), char.col = 4, pattern = posPattern2, pat.name = "positive emoticon")
     summary(as.factor(posEmo_negTweets_2[, 6]))
 ```
+
+## Modifications from April 20 meeting:
+
+* initialized <code>validityTests.R</code> script with some sample functions and references + notes
+* created <strong>BOW_.RDATA</strong> files for *bag-of-words* and 6k - 4k train - test split of sample data
+
+Load BOW RData files and create xTrain, yTrain, xTest, and yTest:
+
+```
+    load("data/BOW_trainCleanDF.RData")
+    load("data/BOW_testCleanDF.RData")
+    trainDF <- BOW_trainCleanedDF
+    testDF <- BOW_testCleanedDF
+    xTrain <- trainDF[, 2:21]
+    xTest <- testDF[, 2:21]
+
+    yTrain <- trainDF[, 1]
+    yTest <- testDF[, 1]
+```
+
+Run randomForest:
+
+```
+    # function from validityTests.R:
+    doRF <- function(xTrain, yTrain, xTest, yTest, numTrees) {
+        library(randomForest)
+        isImportance = TRUE
+
+        # random seed
+        set.seed(1892)
+
+        # predict
+        rfModel <- randomForest(x = xTrain, y = as.factor(yTrain), ntree = numTrees, do.trace = TRUE, importance = isImportance)
+        rfModel.myPred <- predict(rfModel, xTest)
+
+        # correct classification (for binary response)
+        rfModel.correctPred <- (rfModel.myPred == yTest)
+        rfModel.numCorrect <- length(rfModel.correctPred)
+
+        # misclassification error
+        rfModel.misClass <- 1 - sum(rfModel.correctPred) / rfModel.numCorrect
+
+        return(rfModel)
+    }
+
+    getYhat <- function(myPred, threshold = 0.5, labels = class.labels) {
+        factor(as.numeric(myPred > threshold), levels = 0:1, labels = labels)
+    }
+
+    ## Calculate specificity
+    getSpec <- function(class, yhat) {
+      conf <- table(class, yhat)
+      conf[1,1] / sum(conf[1, ])
+    }
+
+    ## Calculate sensitivity
+    getSens <- function(class, yhat) {
+      conf <- table(class, yhat)
+      conf[2,2] / sum(conf[2, ])
+    }
+
+    ## Calculate accuracy
+    getAcc <- function(class, yhat) {
+      sum(diag(table(class, yhat))) / length(class)
+    }
+
+    ## Calculate summary statistics
+    getStats <- function(class, yhat) {
+      c(accuracy = getAcc(class, yhat),
+        sensitivity = getSens(class, yhat),
+        specificity = getSpec(class, yhat))
+    }
+
+    neg.label <- 0
+    pos.label <- 1
+    class.labels <- c(neg.label, pos.label)
+
+    ### Use with randomForest() --> doRF() function from above
+    exRF <- doRF(xTrain, yTrain, xTest, yTest, 100)
+```
+
+Check out randomForest predictions and summary statistics:
+
+```
+    # predictions in exRF.myPred --> .myPred is ~= yHat
+    exRF.myYhat <- getYhat(exRF.myPred)
+
+    # get summary statistics
+    exRF.summaryStats <- getStats(yTest, exRF.myYhat)
+    exRF.summaryStats
+```
+
+Get variable importance plot:
+
+```
+    varImpPlot(exRF)
+```

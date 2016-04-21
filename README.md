@@ -13,6 +13,12 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 
 ## To-Do & Predictor Ideas:
 
+### April 20 Agenda
+
+* Oliver: create script for testing feature importance and model validity / accuracy / stability (<code>sample-r/validityTests.R</code>)
+* Chris: put together standard _bag-of-words_ model with 100k Tweets (maybe 80/20 or 60/40 train-test split)
+* Paul: create function(s) to add features we designed earlier to data (i.e. create predictors) 
+
 ### April 18
 
 #### Predictor Ideas:
@@ -32,20 +38,9 @@ Final project is a group effort (with Chris and Paul) for a [Kaggle competition]
 And more...
 - [ ] Linear combination of normalized positive and normalized negative username / hashtag occurrences
 - [ ] Create a few special columns for occurrence of most-negative or most-positive usernames / hashtags <strong>(see below)</strong>
-- [ ] 
+- [ ]
 
 For example: top 3 usernames that appear with negative tweets may have thousands of occurrences and the 4th most popular negative username may be only 20 occurrences. We could create 3 special columns, one per top username of negative tweets, and each tweet has a <code>1</code> in that column if that username appears.
-
-#### To-Do:
-
-- [ ] Oliver: create 3 positive and 3 negative emoticon patterns
-- [ ] Oliver: run above 6 emoticon patterns on both positive and negative tweets
-- [ ]
-- [ ] Paul: write code to create normalized
-- [ ] Paul:
-- [ ]
-- [ ] Chris: create code to pull out laughing and other non-language components
-- [ ] Chris:
 
 <hr>
 

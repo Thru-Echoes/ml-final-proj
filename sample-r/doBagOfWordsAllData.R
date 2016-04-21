@@ -1,4 +1,10 @@
+##########################################################################################
+##########################################################################################
+##########################################################################################
 # Do bag-of-words on all data 
+##########################################################################################
+##########################################################################################
+##########################################################################################
 
 #load("data/raw.RData")
 labeledRaw.df = raw.data[raw.data$Sentiment != -1, ]
@@ -13,7 +19,10 @@ trainIndex = sample(1:nrow(labeledRaw.df), size = nrow(labeledRaw.df)*trainRatio
 trainRaw.df = labeledRaw.df[trainIndex, ]
 testRaw.df = labeledRaw.df[-trainIndex, ]
 
+
+##########################################################################################
 ##Construct a corpus using the training data
+##########################################################################################
 library(tm)
 #trainCorpus = Corpus(VectorSource(trainDF$cleanedText))
 
@@ -37,7 +46,9 @@ stopWords = readLines("http://jmlr.csail.mit.edu/papers/volume5/lewis04a/a11-sma
 #wordFreqDF = data.frame(word = colnames(tf), freq = wordFreq)
 #rownames(wordFreqDF) = NULL
 
+##########################################################################################
 ##Write a function to get the word frequency data frame
+##########################################################################################
 getWordFreqDF = function(DocumentVec, sparsity, stopwords){
   # Construct corpus
   tempCorpus = Corpus(VectorSource(DocumentVec))
@@ -56,13 +67,15 @@ getWordFreqDF = function(DocumentVec, sparsity, stopwords){
   return(freqWordDF)
 }
 
+##########################################################################################
 ##Get the word frequency data frame for both the training positive and negative Tweets
+##########################################################################################
 wordFreqDF.pos = getWordFreqDF(DocumentVec = trainRaw.df[trainRaw.df$Sentiment == 1, "cleanedText"], sparsity = 0.99, stopwords = stopWords)
 
 wordFreqDF.neg = getWordFreqDF(DocumentVec = trainRaw.df[trainRaw.df$Sentiment == 0, "cleanedText"], sparsity = 0.99, stopwords = stopWords)
 
-save(wordFreqDF.pos, "BOW_trainPos_all.RData")
-save(wordFreqDF.neg, "BOW_trainNeg_all.RData")
+save(wordFreqDF.pos, file = "data/bow-all-data/BOW_trainPosWords_all_april21.RData")
+save(wordFreqDF.neg, file = "data/bow-all-data/BOW_trainNegWords_all_april21.RData")
 
 ##Merge the two data frames
 wordFreqDF.all = merge(wordFreqDF.pos, wordFreqDF.neg, by = "word", all = TRUE)
@@ -76,7 +89,10 @@ wordFreqDF.all$freqNeg[is.na(wordFreqDF.all$freqNeg)] = 0
 wordFreqDF.all$diff = abs(wordFreqDF.all$freqPos - wordFreqDF.all$freqNeg)
 
 
+##########################################################################################
 ### Get word count of top N words: 
+##########################################################################################
+
 library(stringr)
 getPattern = function(data, sub.index, char.col, pattern, pat.name){
   sub.data = data.frame(data[sub.index, ]) #subset the data frame.
@@ -107,6 +123,10 @@ getPattern = function(data, sub.index, char.col, pattern, pat.name){
   return(sub.data)
 }
 
+##########################################################################################
+# Find word count - word importance 
+##########################################################################################
+
 ##Find the word count of the 50 "important" words in the training and testing set.
 n = 50
 importantWords = wordFreqDF.all$word[order(wordFreqDF.all$diff, decreasing = TRUE)[1:n]]
@@ -119,6 +139,10 @@ for (i in 1:n) {
                       pattern = importantWords[i], pat.name = importantWords[i])
 }
 
+##########################################################################################
+# Clean data and save as RData 
+##########################################################################################
+
 # Clean up 
 trainCleanedDF = data.frame(Sentiment = trainClean.df$Sentiment, 
                             trainClean.df[ , seq(from = 7, to = ncol(trainClean.df), by = 2)])
@@ -129,12 +153,17 @@ testCleanedDF = data.frame(Sentiment = testClean.df$Sentiment,
 BOW_testCleanedDF = testCleanedDF
 
 # Save those two data frames for analysis
-save(BOW_trainCleanedDF, file = "data/BOW_trainCleanDF_all.RData")
-save(BOW_testCleanedDF, file = "data/BOW_testCleanDF_all.RData")
+#save(BOW_trainCleanedDF, file = "data/bow-all-data/BOW_trainCleanDF_all.RData")
+#save(BOW_testCleanedDF, file = "data/bow-all-data/BOW_testCleanDF_all.RData")
+
+# Add data to .RData files 
+save(BOW_trainCleanedDF, file = "data/bow-all-data/BOW_trainClean_all_april21.RData")
+save(BOW_testCleanedDF, file = "data/bow-all-data/BOW_testClean_all_april21.RData")
 
 
 ##########################################################################################
-### Trial randomForest run - 100 trees 
+### Trial randomForest run - 100 and 1k trees 
+##########################################################################################
 
 set.seed(1)
 allData.rfModel100 = randomForest(x = as.matrix(BOW_trainCleanedDF[ , -1]), y = as.factor(BOW_trainCleanedDF[ , 1]), mtry = 10, ntree = 100)
@@ -142,7 +171,10 @@ allData.rfModel100 = randomForest(x = as.matrix(BOW_trainCleanedDF[ , -1]), y = 
 allData.rfModel100.myPredict = predict(allData.rfModel100, as.matrix(BOW_testCleanedDF[ , -1]))
 allData.rfModel100.accur = sum(allData.rfModel100.myPredict == as.factor(BOW_testCleanedDF[ , 1])) / length(BOW_testCleanedDF[ , 1])
 
-##########################################################################################
+### Variable Importance Plot
+varImpPlot(allData.rfModel100)
+
+##########
 ### Trial randomForest run - 1000 trees 
 
 set.seed(1)
@@ -150,3 +182,6 @@ allData.rfModel1k = randomForest(x = as.matrix(BOW_trainCleanedDF[ , -1]), y = a
 
 allData.rfModel1k.myPredict = predict(allData.rfModel1k, as.matrix(BOW_testCleanedDF[ , -1]))
 allData.rfModel1k.accur = sum(allData.rfModel1k.myPredict == as.factor(BOW_testCleanedDF[ , 1])) / length(BOW_testCleanedDF[ , 1])
+
+### Variable Importance Plot
+varImpPlot(allData.rfModel1k)

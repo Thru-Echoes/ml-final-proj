@@ -304,11 +304,13 @@ for (hashtags in pos.tweets.df$hashtags) {
 pos.tweets.df <- cbind(pos.tweets.df, pos.hash.score)
 
 unsorted.tweets.df <- rbind(subset(neg.tweets.df,
-                      c(Index, neg.user.score, neg.hash.score,
-                        pos.user.score, pos.hash.score)),
-               subset(pos.tweets.df,
-                      c(Index, neg.user.score, neg.hash.score,
-                        pos.user.score, pos.hash.score)))
+                                   select=c(Index, neg.user.score,
+                                            neg.hash.score, pos.user.score,
+                                            pos.hash.score)),
+                            subset(pos.tweets.df,
+                                   select=c(Index, neg.user.score,
+                                            neg.hash.score, pos.user.score,
+                                            pos.hash.score)))
 
 sorted.tweets.df <- unsorted.tweets.df %>%
   arrange(Index) %>%
@@ -319,5 +321,3 @@ X <- cbind(X, sorted.tweets.df)
 
 save(X, file="featureMatrix.RData")
 save.image()
-unlink("featureMatrix.RData")
-unlink(".RData")

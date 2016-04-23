@@ -321,3 +321,5 @@ X <- cbind(X, sorted.tweets.df)
 
 save(X, file="featureMatrix.RData")
 save.image()
+
+load("../data/featureMatrix.RData")

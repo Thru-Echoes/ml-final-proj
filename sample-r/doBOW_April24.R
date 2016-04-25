@@ -294,11 +294,18 @@ n <- 50
 importantWords = wordFreqDF.all$word[order(wordFreqDF.all$diff, decreasing = TRUE)[1:n]]
 importantWords = as.character(importantWords)
 for (i in 1:n) {
+  print(list("Current in loop: ", i))
   patternLabeled.df = getPattern(data = patternLabeled.df, sub.index = 1:nrow(patternLabeled.df), char.col = 5,
                            pattern = importantWords[i], pat.name = importantWords[i])
   #testRaw.df = getPattern(data = testRaw.df, sub.index = 1:nrow(testRaw.df), char.col = 5,
   #                        pattern = importantWords[i], pat.name = importantWords[i])
 }
+
+#
+#
+#
+#
+
 
 ##########################################################################################
 # Clean data and save as RData
@@ -384,7 +391,7 @@ save(test_55features, file = "data/bow-april24/RF_test_55features_april24.RData"
 #
 #
 
-allData.rfModelAll = randomForest(x = as.matrix(train_55features[ , -1]), y = as.factor(train_55features[ , 1]), mtry = 10, ntree = 1000)
+allData.rfModelAll = randomForest(x = as.matrix(train_55features[ , -1]), y = as.factor(train_55features[ , 1]), mtry = 10, ntree = 1000, verbose = TRUE)
 
 allData.rfModelAll.myPredict = predict(allData.rfModelAll, as.matrix(test_55features[ , -1]))
 allData.rfModelAll.accur = sum(allData.rfModelAll.myPredict == as.factor(test_55features[ , 1])) / length(test_55features[ , 1])

@@ -19,3 +19,7 @@
 ### Run R file in Batch mode:
 
     R CMD BATCH file.R file.Rout &
+
+### Check on progress of file run:
+
+    tail -30 file.Rout

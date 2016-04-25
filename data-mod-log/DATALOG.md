@@ -515,3 +515,86 @@ Get variable importance plot:
 ```
     varImpPlot(exRF)
 ```
+
+<hr>
+
+## April 24 meeting:
+
+### Overview
+
+##### We currently have:
+
+1. 50 features from Bag-of-words on all data
+2. 4 features from username + hashtag scores for all data
+
+##### To-do for today:
+
+1. Create 54 feature <strong>a. dataframe + b. matrix </strong>
+2. Create 1k sample of a. dataframe + b. matrix
+3. Run <strong>a. Naive Bayes, b. randomForest(), and c. XGBoost</strong> on 1k sample
+4. Setup script for 3a-c runs on all data
+5. Setup <strong>word2vec</strong> script
+6. (maybe) Setup <strong>emoticon</strong> extraction features script  
+
+<hr>
+
+### Notes on process
+
+* 50 BOW features in <code>data/bow-all-data/</code>
+* 4 username / hashtag features in <code>data/featureMatrix.RData</code>
+
+Get 4 username / hashtag features:
+
+```
+    load("data/featureMatrix.RData")
+    # X = data object
+    #
+    # has features [tweet.lengths, neg.user.score, neg.hash.score, pos.user.score, pos.hash.score]
+    dim(X)
+    # 1528627 x 5
+    XallScores <- X
+```
+
+Get 1k sample df and matrix for testing:
+
+```
+    # sample 1k indices
+    tmpIndx <- sample(1:nrow(trainRaw.df), size = 1000, replace = FALSE)
+    length(unique(tmpIndx))
+    # 1000
+    train_1k_april24.df <- trainRaw.df[tmpIndx, ]
+```
+
+Get username / hashtag trainIndex corresponding to BOW train df:
+
+```
+    X.trainRaw.df <- XallScores[(trainIndex), ]
+    X.train1k.df <- X.trainRaw.df[tmpIndx, ]
+```
+
+Run BOW extraction on 1k sample:
+
+```
+    trainCleanedDF_1k = data.frame(Sentiment = train_1k_april24.df$Sentiment,
+                           train_1k_april24.df[ , seq(from = 7, to = ncol(train_1k_april24.df), by = 2)])
+    BOW_trainCleanedDF_1k = trainCleanedDF_1k
+```
+
+Add all features into 1 single 55 + response dataframe (55 because also have tweet length):
+
+```
+    total_features_1k <- cbind(BOW_trainCleanedDF_1k, X.train1k.df)
+```
+
+Run tests:
+
+```
+    # do randomForest...
+```
+
+### April 24 - do on all data
+
+```
+    # Do doBOW_april24.R
+    
+```

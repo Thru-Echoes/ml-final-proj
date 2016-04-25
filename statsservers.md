@@ -23,3 +23,6 @@
 ### Check on progress of file run:
 
     tail -30 file.Rout
+
+### Check whether your file is still running:
+    top

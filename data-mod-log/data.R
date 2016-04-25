@@ -322,4 +322,78 @@ X <- cbind(X, sorted.tweets.df)
 save(X, file="featureMatrix.RData")
 save.image()
 
+# y <- as.factor(raw.data$Sentiment[50001:nrow(raw.data)])
+# 
+# save(y, file="y.RData")
+# save.image()
+
+################################ MODEL BUILDING ################################
+
+suppressMessages(library(xgboost)) # Parallelized Boosting
+suppressMessages(library(e1071)) # Naive Bayes, SVM
+suppressMessages(library(kernlab)) # Kernelized Methods, KSVM
+suppressMessages(library(glmnet)) # LASSO/Elastic-Net GLM
+suppressMessages(library(ipred)) # Bagging
+suppressMessages(library(randomForest)) # Random Forest
+suppressMessages(library(MASS)) # ?
+suppressMessages(library(bestglm))
+# suppressMessages(library(rpart)) # CART (Decision Trees)
+
+# Naive Bayes Model
+# Boosting Model
+# Random Forest Model
+
+# Logistic Regression Model (Regularized)
+# SVM Model
+# KSVM Model
+
+# Loading Data
 load("../data/featureMatrix.RData")
+load("../data/y.RData")
+
+X <- as.matrix(X)
+
+# Partitioning the data set
+n <- nrow(X)
+sample.size <- floor(0.8*n)
+set.seed(123)
+train.sample <- sample(1:n, sample.size)
+train <- list(X=X[train.sample,], y=y[train.sample])
+test <- list(X=X[-train.sample,], y=y[-train.sample])
+
+# I measured the quality of my classifiers simply by calculating the overall 
+# prediction success rate and the success rates for each category of the 
+# response variable. I created the following function to do this:
+class.test <- function(real, predicted) {
+  # Assesses the accuracy of a model's predictions
+  ct <- table(real, predicted)
+  # [[1]] Percent correct for each category and [[2]] Total percent correct
+  return(list(diag(prop.table(ct, 1)), sum(diag(prop.table(ct)))))
+}
+
+############################# Logistic Regression ##############################
+
+# lasso.log.model <- cv.glmnet(train$X, train$y,
+#                              family="binomial", nfolds=sample.size,
+#                              type.measure="class", grouped=FALSE)
+
+# To determine the best variables for logistic regression I used the bestglm 
+# function in the bestglm package. The bestglm function performs best subset 
+# selection based on a given criteria. The criteria I chose were AIC and BIC. I
+# took the best models according to these criteria and compared them.
+
+bglm.train <- cbind(as.data.frame(train$X), y=train$y)
+
+bglm.train <- bglm.train[1:10000,]
+
+log.best.aic <- bestglm(bglm.train, family=binomial, IC="AIC")
+log.best.bic <- bestglm(bglm.train, family=binomial, IC="BIC")
+
+mod <- glm(y ~ neg.user.score + neg.hash.score + pos.user.score + pos.hash.score, family=binomial, data=bglm.train)
+
+log.pred <- ifelse(predict(mod, type="response") > 0.5, 1, 0)
+
+class.test(train$y[1:10000], log.pred)
+
+# length(which(X[,1] > 140))
+# raw.data[521832,]

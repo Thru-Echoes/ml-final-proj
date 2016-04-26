@@ -29,7 +29,7 @@ paramXGB <- function() {
     num.folds <- 5
 
     # Cross validation
-    cv.nround = 500
+    cv.nround = 350
     bst <- xgb.cv(param = param, data = x[trainIndx, ], nfold = num.folds, label = y[trainIndx], nrounds = cv.nround, verbose = 0, 
                   metrics = list("error", "auc", "logloss"))
 

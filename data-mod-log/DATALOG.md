@@ -596,5 +596,13 @@ Run tests:
 
 ```
     # Do doBOW_april24.R
-    
+    ...
 ```
+
+<hr>
+
+## April 25 meeting:
+
+### Overview
+
+Ran 100-tree randomForest, added variable importance plot, put together XGBoost and corresponding parameter search scripts. Running XGBoost parameter search with some subset of data - e.g. 25% of data - run 10k set of random parameters and check for minimum error / AUC / logloss.

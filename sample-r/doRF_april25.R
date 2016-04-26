@@ -453,10 +453,10 @@ BOW_finalTest_clean = finalTest.clean
 save(BOW_finalTest_clean, file = "submission/April25_BOW_clean.rda")
 
 ### Add in username + hashtag features 
+load("data-mod-log/testMatrix.RData")
+Scores_finalTest <- X.test
 #
-#
-#
-final_55features <- cbind(BOW_finalTest_clean, XallScores)
+final_55features <- cbind(BOW_finalTest_clean, Scores_finalTest)
 save(final_55features, file = "submission/April25_finalDF_55features.rda")
 
 april25.myPredict = predict(allData.rfModel100, final_55features[, -1])

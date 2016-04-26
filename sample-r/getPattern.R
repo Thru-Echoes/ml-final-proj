@@ -20,7 +20,7 @@
 #The second additional column contains the number of matched patterns for each row.
 
 library(stringr)
-getPattern = function(data, sub.index, char.col, pattern, pat.name, curr.indx) {
+getPattern = function(data, sub.index, char.col, pattern, pat.name) {
 
     debugger;
 
@@ -34,7 +34,7 @@ getPattern = function(data, sub.index, char.col, pattern, pat.name, curr.indx) {
   sub.data[ , ncol(sub.data) + 1] = rep(0, times = nrow(sub.data))
   #add two columns.
 
-  n.col = ncol(sub.data) + curr.indx - 1 #number of columns in the augmented data frame.
+  n.col = ncol(sub.data) #number of columns in the augmented data frame.
 
   colnames(sub.data)[n.col - 1] = pat.name
   colnames(sub.data)[n.col] = paste(pat.name, "count")

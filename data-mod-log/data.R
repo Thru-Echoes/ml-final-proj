@@ -2,9 +2,26 @@ suppressMessages(library(dplyr))
 suppressMessages(library(stringr))
 
 vocab <- scan("../data/vocab.txt", what="character", sep="\n", encoding="latin1")
-load("../data/raw.RData")
 
+load("../data/raw.RData")
 raw.data$SentimentText <- as.character(raw.data$SentimentText)
+
+################################## TEST DATA ###################################
+test.tweets <- data.frame(tweets=raw.data$SentimentText[1:50000])
+test.tweets$tweets <- as.character(test.tweets$tweets)
+
+usernames.pattern <- "(\\B@[[:alnum:]_]+)"
+hashtags.pattern <- "(\\B#[[:alnum:]_]+)"
+
+# Test Tweets Username and Hashtag Matches
+test.tweets <- test.tweets %>%
+  mutate(usernames=str_extract_all(tweets, usernames.pattern),
+         hashtags=str_extract_all(tweets, hashtags.pattern))
+
+# First Feature
+X.test <- data.frame(tweet.lengths=nchar(test.tweets$tweets))
+
+################################################################################
 
 raw.data <- raw.data[50001:nrow(raw.data),]
 Index <- 1:nrow(raw.data)
@@ -102,6 +119,138 @@ sum(lengths(pos.tweets.df$usernames) > 1)
 max(lengths(pos.tweets.df$hashtags))
 # Number of positive tweets with more than one hashtag
 sum(lengths(pos.tweets.df$hashtags) > 1)
+
+
+
+
+
+################################# TEST SCORES ##################################
+
+# Negative Username Scores for Test Tweets
+neg.user.score <- c()
+for (usernames in test.tweets$usernames) {
+  if (length(usernames) == 0) {
+    neg.user.score <- c(neg.user.score, 0)
+  } else if (length(usernames) > 1) {
+    sub.scores <- c()
+    for (i in length(usernames)) {
+      if (usernames[i] %in% neg.usernames$Username) {
+        sub.scores <- c(sub.scores, neg.usernames$Score[which(usernames[i] == neg.usernames$Username)])
+      } else {
+        sub.scores <- c(sub.scores, 0)
+      }
+    }
+    neg.user.score <- c(neg.user.score, max(sub.scores))
+  } else {
+    if (usernames %in% neg.usernames$Username) {
+      neg.user.score <- c(neg.user.score, neg.usernames$Score[which(usernames == neg.usernames$Username)])
+    } else {
+      neg.user.score <- c(neg.user.score, 0)
+    }
+  }
+}
+test.tweets <- cbind(test.tweets, neg.user.score)
+
+# Negative Hashtag Scores for Test Tweets
+neg.hash.score <- c()
+count <- 0
+for (hashtags in test.tweets$hashtags) {
+  print(count/nrow(test.tweets))
+  if (length(hashtags) == 0) {
+    neg.hash.score <- c(neg.hash.score, 0)
+  } else if (length(hashtags) > 1) {
+    sub.scores <- c()
+    for (i in length(hashtags)) {
+      if (hashtags[i] %in% neg.hashtags$Hashtag) {
+        sub.scores <- c(sub.scores, neg.hashtags$Score[which(hashtags[i] == neg.hashtags$Hashtag)])
+      } else {
+        sub.scores <- c(sub.scores, 0)
+      }
+    }
+    neg.hash.score <- c(neg.hash.score, max(sub.scores))
+  } else {
+    if (hashtags %in% neg.hashtags$Hashtag) {
+      neg.hash.score <- c(neg.hash.score, neg.hashtags$Score[which(hashtags == neg.hashtags$Hashtag)])
+    } else {
+      neg.hash.score <- c(neg.hash.score, 0)
+    }
+  }
+  count <- count + 1
+}
+test.tweets <- cbind(test.tweets, neg.hash.score)
+
+# Positive Username Scores for Test Tweets
+pos.user.score <- c()
+count <- 0
+for (usernames in test.tweets$usernames) {
+  print(count/nrow(test.tweets))
+  if (length(usernames) == 0) {
+    pos.user.score <- c(pos.user.score, 0)
+  } else if (length(usernames) > 1) {
+    sub.scores <- c()
+    for (i in length(usernames)) {
+      if (usernames[i] %in% pos.usernames$Username) {
+        sub.scores <- c(sub.scores, pos.usernames$Score[which(usernames[i] == pos.usernames$Username)])
+      } else {
+        sub.scores <- c(sub.scores, 0)
+      }
+    }
+    pos.user.score <- c(pos.user.score, max(sub.scores))
+  } else {
+    if (usernames %in% pos.usernames$Username) {
+      pos.user.score <- c(pos.user.score, pos.usernames$Score[which(usernames == pos.usernames$Username)])
+    } else {
+      pos.user.score <- c(pos.user.score, 0)
+    }
+  }
+  count <- count + 1
+}
+test.tweets <- cbind(test.tweets, pos.user.score)
+
+# Positive Hashtag Scores for Test Tweets
+pos.hash.score <- c()
+count <- 0
+for (hashtags in test.tweets$hashtags) {
+  print(count/nrow(test.tweets))
+  if (length(hashtags) == 0) {
+    pos.hash.score <- c(pos.hash.score, 0)
+  } else if (length(hashtags) > 1) {
+    sub.scores <- c()
+    for (i in length(hashtags)) {
+      if (hashtags[i] %in% pos.hashtags$Hashtag) {
+        sub.scores <- c(sub.scores, pos.hashtags$Score[which(hashtags[i] == pos.hashtags$Hashtag)])
+      } else {
+        sub.scores <- c(sub.scores, 0)
+      }
+    }
+    pos.hash.score <- c(pos.hash.score, max(sub.scores))
+  } else {
+    if (hashtags %in% pos.hashtags$Hashtag) {
+      pos.hash.score <- c(pos.hash.score, pos.hashtags$Score[which(hashtags == pos.hashtags$Hashtag)])
+    } else {
+      pos.hash.score <- c(pos.hash.score, 0)
+    }
+  }
+  count <- count + 1
+}
+test.tweets <- cbind(test.tweets, pos.hash.score)
+
+# Adding the new features
+
+test.tweets <- subset(test.tweets, select=-c(tweets, usernames, hashtags))
+test.tweets <- subset(test.tweets, select=-tweets)
+
+X.test <- cbind(X.test, test.tweets)
+
+save(X.test, file="testMatrix.RData")
+save.image()
+
+# STOP STOP STOP
+
+################################################################################
+
+
+
 
 # Negative Username Scores for Negative Tweets
 neg.user.score <- c()
@@ -321,6 +470,12 @@ X <- cbind(X, sorted.tweets.df)
 
 save(X, file="featureMatrix.RData")
 save.image()
+
+
+
+
+
+
 
 # y <- as.factor(raw.data$Sentiment[50001:nrow(raw.data)])
 # 

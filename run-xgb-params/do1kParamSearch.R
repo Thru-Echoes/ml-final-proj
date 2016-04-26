@@ -25,8 +25,8 @@ paramXGB <- function() {
     param$eta <- runif(1, 0.01, 0.6)
     param$gamma <- runif(1, 0.0, 100)
     param$min_child_weight <- runif(1, 0.0, 100)
-    param$subsample <- runif(1, 0, 1)
-    param$colsample_bytree <- runif(1, 0, 1)
+    param$subsample <- runif(1, 0.1, 1)
+    param$colsample_bytree <- runif(1, 0.1, 1)
     param$lambda <- runif(1, 0.0, 100)
     param$alpha <- runif(1, 0.0, 100)
     num.folds <- 5

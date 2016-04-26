@@ -7,29 +7,53 @@ require(xgboost)
 # This is the parameter search function
 paramXGB <- function() {
 
+#     param <- list("objective" = "binary:logistic",
+#                 "max.depth" = 6,
+#                 "eta" = 0.1,
+#                 "gamma" = 0,
+#                 "min_child_weight" = 1,
+#                 "nthread" = 8,
+#                 "booster" = "gbtree",
+#                 "subsample" = 1,
+#                 "colsample_bytree" = 1,
+#                 "lambda" = 1,
+#                 "alpha" = 0)
+#     allResults <- vector()
+# 
+#     # Random parameter assignment
+#     param$max.depth <- sample(3:9, 1, replace = T)
+#     param$eta <- runif(1, 0.01, 0.6)
+#     param$gamma <- runif(1, 0.0, 100)
+#     param$min_child_weight <- runif(1, 0.0, 100)
+#     param$subsample <- runif(1, 0.1, 1)
+#     param$colsample_bytree <- runif(1, 0.1, 1)
+#     param$lambda <- runif(1, 0.0, 100)
+#     param$alpha <- runif(1, 0.0, 100)
+#     num.folds <- 5
+    
     param <- list("objective" = "binary:logistic",
-                "max.depth" = 6,
-                "eta" = 0.1,
-                "gamma" = 0,
-                "min_child_weight" = 1,
-                "nthread" = 8,
-                "booster" = "gbtree",
-                "subsample" = 1,
-                "colsample_bytree" = 1,
-                "lambda" = 1,
-                "alpha" = 0)
+                  "max.depth" = 6,
+                  "eta" = 0.1,
+                  "gamma" = 0,
+                  "min_child_weight" = 1,
+                  "nthread" = 8,
+                  "booster" = "gbtree",
+                  "subsample" = 1,
+                  "colsample_bytree" = 1,
+                  "lambda" = 1,
+                  "alpha" = 0)
     allResults <- vector()
-
+    
     # Random parameter assignment
     param$max.depth <- sample(3:9, 1, replace = T)
-    param$eta <- runif(1, 0.01, 0.6)
-    param$gamma <- runif(1, 0.0, 100)
-    param$min_child_weight <- runif(1, 0.0, 100)
+    param$eta <- runif(1, 0.01, 0.8)
+    param$gamma <- runif(1, 10, 80)
+    param$min_child_weight <- runif(1, 25, 75)
     param$subsample <- runif(1, 0.1, 1)
     param$colsample_bytree <- runif(1, 0.1, 1)
     param$lambda <- runif(1, 0.0, 100)
     param$alpha <- runif(1, 0.0, 100)
-    num.folds <- 5
+    num.folds <- 3
 
     # Cross validation
     cv.nround = 350
@@ -53,6 +77,11 @@ paramXGB <- function() {
                   "eta" = param$eta,
                   "gamma" = param$gamma,
                   "min_child_weight" = param$min_child_weight,
+                  "subsample" = param$subsample,
+                  "colsample_bytree" = param$colsample_bytree,
+                  "lambda" = param$lambda,
+                  "alpha" = param$alpha,
+                  "gamma" = param$gamma, 
                   "minError" = minError,
                   "idxminError" = idxminError,
                   "maxAUC" = maxAUC,
@@ -87,7 +116,8 @@ yAllLabel <- c(yTrain, yTest)
 ########################################
 
 set.seed(1)
-trainIndx <- sample(1:nrow(trainNow), size = floor(nrow(trainNow) * 0.25), replace = F)
+#trainIndx <- sample(1:nrow(trainNow), size = floor(nrow(trainNow) * 0.25), replace = F)
+trainIndx <- sample(1:nrow(trainNow), size = floor(nrow(trainNow) * 0.1), replace = F)
 x <- as.matrix(trainNow[, -1])
 y <- trainNow[, 1]
 

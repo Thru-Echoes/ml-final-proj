@@ -25,10 +25,10 @@ finalWordsToUse = c(wordsToUse_WB, more.words)
 save(finalWordsToUse, file = "April26_wordsToUse.rda")
 
 tf2 = t(apply(t(testAll$cleanedText), 2, function(x) str_count(x, finalWordsToUse)))
-save(tf2, file = "tfMatrix_AllRaw.rda")
+save(tf2, file = "April26_tfMatrix_AllRaw.rda")
 
 idf = log(nrow(tf2) / colSums(sign(tf2)))
 idf[is.infinite(idf)] = 0
 
 tf_idf = t(apply(tf2, 1, function(x) x * idf))
-save(tf_idf, file = "tf_idfMatrix_AllRaw.rda")
+save(tf_idf, file = "April26_tf_idfMatrix_AllRaw.rda")

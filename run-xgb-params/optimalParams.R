@@ -282,6 +282,47 @@ print(paste("test-error (sparse.auc2) = ", err.sparse.auc2))
 err.sparse.auc3 <- mean(as.numeric(pred.sparse.auc3 > 0.5) != testY)
 print(paste("test-error (sparse.auc3) = ", err.sparse.auc3))
 
+library(ROCR)
+
+head(raw.data$SentimentText, 20)
+raw.data$SentimentText <- as.character(raw.data$SentimentText)
+
+paul.class.test <- function(real, predicted) {
+  # Assesses the accuracy of a model's predictions
+  ct <- table(real, predicted)
+  # [[1]] Percent correct for each category and [[2]] Total percent correct
+  return(list(diag(prop.table(ct, 1)), sum(diag(prop.table(ct)))))
+}
+
+default.pred <- as.numeric(pred.sparse.default > 0.505)
+auc1.pred <- as.numeric(pred.sparse.auc1 > 0.5)
+auc2.pred <- as.numeric(pred.sparse.auc2 > 0.5)
+auc3.pred <- as.numeric(pred.sparse.auc3 > 0.5)
+
+paul.class.test(testY, default.pred)
+paul.class.test(testY, auc1.pred)
+paul.class.test(testY, auc2.pred)
+paul.class.test(testY, auc3.pred)
+
+performance(prediction(default.pred, testY), measure="auc")@y.values[[1]]
+performance(prediction(auc1.pred, testY), measure="auc")@y.values[[1]]
+performance(prediction(auc2.pred, testY), measure="auc")@y.values[[1]]
+performance(prediction(auc3.pred, testY), measure="auc")@y.values[[1]]
+
+load("submission/April25_finalDF_55features.rda")
+
+sub.test.sparse <- Matrix(data=as.matrix(final_55features[,-1]), sparse=TRUE)
+
+pred.sparse.default.submission = as.numeric(predict(bst.sparse.default, newdata=sub.test.sparse) > 0.5)
+
+submission = data.frame(id = 1:length(pred.sparse.default.submission), y = pred.sparse.default.submission)
+write.csv(submission, file = "submission/Submission2xgb_COP.csv", row.names = FALSE)
+
+
+neg.tweets <- raw.data$SentimentText[which(raw.data$Sentiment==0)]
+class(neg.tweets)
+any(grepl(x=neg.tweets, pattern="best"))
+
 ########################################
 
 err.sparse.default <- mean(as.numeric(pred.sparse.default > 0.3) != testY)
@@ -313,7 +354,13 @@ print(paste("test-error (sparse.auc3) = ", err.sparse.auc3))
 ############################################
 # CHECK INDICES WHERE ALWAYS RIGHT / WRONG #
 ############################################
+wrong.negIndx <- which(((compare.all.models$yHat.default + compare.all.models$yHat.auc1 + compare.all.models$yHat.auc2 + compare.all.models$yHat.auc3) == 4) & (compare.all.models$yActual == 0))
 
-wrong.negIndx <- which(((compare.all.models$yHat.default + compare.all.models$yHat.auc1 + compare.all.models$yHat.auc2 + compare.all.models$yHat.auc3) == 4) && (compare.all.models$yActual == 0))
+length(wrong.negIndx)
 
+wrong.posIndx <- which(((compare.all.models$yHat.default + compare.all.models$yHat.auc1 + compare.all.models$yHat.auc2 + compare.all.models$yHat.auc3) == 0) & (compare.all.models$yActual == 1))
+
+length(wrong.posIndx)
 ############## END #####################
+
+head(compare.all.models)

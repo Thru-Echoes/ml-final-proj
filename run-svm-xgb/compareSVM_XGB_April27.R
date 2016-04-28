@@ -276,10 +276,10 @@ print(paste("test-error (sparse.default) = ", err.sparse.param4))
 
 x <- x290.testing 
 y <- y290.testing 
-xTrain = x
+xTrain = as.matrix(x)
 yTrain = as.factor(y)
 
-xTest = x
+xTest = as.matrix(x)
 yTest = as.factor(y)
 
 trainIndx <- indx290.train

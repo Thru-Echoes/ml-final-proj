@@ -310,6 +310,11 @@ for (i in 1:n.seqC) {
   svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
                kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
   CVerror[i] = svmCV@cross
+  fileIter <- paste("CVerror_lin", i, sep = "_")
+  rdaLoc <- paste(fileIter, ".rda", sep = "")
+  csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
 }
 
 save(CVerror, "april28-svm-cv/April28_20features_Lin.SVM_CVerror.rda")
@@ -325,8 +330,8 @@ save(predict_LinearSVM, file = "april28-svm-cv/April28_20features_predict_Linear
 
 
 ##Perform Gaussian kernel SVM modeling and prediction.
-seqC = c(0.0001, 0.001, 0.01, 0.1, 0.5, 1, 1.5, 10, 100, 1000)
-seqSigma = c(0.0001, 0.001, 0.01, 0.1, 0.5, 1, 1.5, 10, 100, 1000)
+seqC = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
+seqSigma = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
 
 permuPar = expand.grid(seqC, seqSigma)
 n.permuPar = nrow(permuPar)
@@ -335,12 +340,17 @@ CVError.GSVM = rep(NA, times = n.permuPar)
 
 # 5-fold CV with 20% of the data 
 for (i in 1:n.permuPar) {
-  print("Grid search: ")
+  print("Grid search Guassian Kernel SVM: ")
   print(i)
   svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
                kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5, 
                kpar = list(sigma = permuPar[i , 2]))
   CVError.GSVM[i] = svmCV@cross
+  fileIter <- paste("CVerror_gaussian", i, sep = "_")
+  rdaLoc <- paste(fileIter, ".rda", sep = "")
+  csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
 }
 
 save(CVError.GSVM, "april28-svm-cv/April28_20features_GSVM_CVerror.rda")

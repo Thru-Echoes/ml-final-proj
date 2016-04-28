@@ -13,14 +13,61 @@ test.tweets$tweets <- as.character(test.tweets$tweets)
 usernames.pattern <- "(\\B@[[:alnum:]_]+)"
 hashtags.pattern <- "(\\B#[[:alnum:]_]+)"
 
+fuck.pattern <- "\\b[a-z]*fuck[a-z]*\\b"
+
+laugh.pattern <- "\\b(?=lol)\\S*(\\S+)(?<=\\blol)\1*\\b"
+laugh.pattern <- "\\b(?=haha)\\S*(\\S+)(?<=\\bhaha)\1*\\b"
+laugh.pattern <- "\\b(?=omg)\\S*(\\S+)(?<=\\bomg)\1*\\b"
+
 # Test Tweets Username and Hashtag Matches
 test.tweets <- test.tweets %>%
   mutate(usernames=str_extract_all(tweets, usernames.pattern),
-         hashtags=str_extract_all(tweets, hashtags.pattern))
+         hashtags=str_extract_all(tweets, hashtags.pattern),
+         laughing=str_extract_all(tweets, laugh.pattern))
+
+test.tweets <- test.tweets %>%
+  mutate(fucks=str_extract_all(tweets, fuck.pattern))
+
+head(test.tweets$fucks)
+
+for (i in 307:50000) {
+  if (length(test.tweets$fucks[[i]]) != 0) {
+    print(test.tweets$tweets[[i]])
+    print(test.tweets$fucks[[i]])
+    print(i)
+    break
+  }
+}
+
+# Construct a feature that is bad word or no bad word?
+
+
+more.words <- c("\\b[a-z]*fuck[a-z]*\\b", "\\bshit\\b", "\\bdamn\\b", "\\bbitch\\b", "\\bcrap\\b", "\\bpiss\\b", "\\bdick\\b", "\\bdarn\\b", "\\bcock\\b", "\\bpussy\\b", "\\basshole\\b", "\\bfag\\b", "\\bfaggit\\b", "\\bfagit\\b", "\\bbastard\\b", "\\bslut\\b", "\\bdouche\\b", "\\bcunt\\b", "\\bl8r\\b", "\\bgr8\\b", "\\bimho\\b", "\\bimo\\b", "\\bily\\b", "\\bsol\\b", "\\bthx\\b", "\\bthnx\\b", "\\brotflmao\\b", "\\bnp\\b", "\\bomg\\b", "\\blmao\\b", "\\btmi\\b", "\\bwtf\\b", "\\bxoxo\\b", "\\bttyl\\b", "\\bjk\\b", "\\brofl\\b", "\\brotfl\\b", "\\bbff\\b", "\\bfyi\\b", "\\bdiy\\b", "\\bidk\\b", "\\bftw\\b", "\\brsvp\\b", "\\btgif\\b", "\\bwth\\b")
+
+
+# Or construct a feature that assigns a bad word score, given that it exists?
+
+# probability that a tweet with a bad word is negative, given that it is a
+# certain bad word.
+
+# How do you construct the probability:
+
+# 
+
+
+
+str1 <- "fuckkkkk fucking muthafucka"
+str2 <- "haha haha hahaha hahaaha"
+str3 <- "omgggggg gomg"
+str4 <- "Yoooooooo"
+sample.df <- data.frame(tweets=c(str1, str2, str3, str4))
+
+sample.df <- sample.df %>%
+  mutate(fuck=str_extract_all(tweets, fuck.pattern))
+
 
 # First Feature
 X.test <- data.frame(tweet.lengths=nchar(test.tweets$tweets))
-
 ################################################################################
 
 raw.data <- raw.data[50001:nrow(raw.data),]
@@ -98,7 +145,58 @@ nrow(pos.hashtags)
 # FEATURE CREATION
 
 head(neg.tweets.df)
+
+
+
+neg.usernames.subset <- neg.usernames %>%
+  arrange(desc(Frequency)) %>%
+  select(Username) %>%
+  head(50)
+
+pos.usernames.subset <- pos.usernames %>%
+  arrange(desc(Frequency)) %>%
+  select(Username) %>%
+  head(50)
+
+neg.hashtags.subset <- neg.hashtags %>%
+  arrange(desc(Frequency)) %>%
+  select(Hashtag) %>%
+  head(50)
+
+pos.hashtags.subset <- pos.hashtags %>%
+  arrange(desc(Frequency)) %>%
+  select(Hashtag) %>%
+  head(50)
+
+joined.usernames <- pos.usernames.subset %>%
+  full_join(neg.usernames.subset, by=c("Username"="Username"))
+
+joined.usernames <- gsub("^", "\\\\b", joined.usernames$Username)
+joined.usernames <- gsub("$", "\\\\b", joined.usernames)
+
+joined.hashtags <- pos.hashtags.subset %>%
+  full_join(neg.hashtags.subset, by=c("Hashtag"="Hashtag"))
+
+joined.hashtags <- gsub("^", "\\\\b", joined.hashtags$Hashtag)
+joined.hashtags <- gsub("$", "\\\\b", joined.hashtags)
+
+userhash.words <- c(joined.usernames, joined.hashtags)
+userhash.words <- unique(tolower(userhash.words))
+save(userhash.words, file="userhashwords.RData")
+
+userhash.words2 <- c(joined.usernames$Username, joined.hashtags$Hashtag)
+userhash.words2 <- unique(tolower(userhash.words2))
+save(userhash.words2, file="userhashwords2.RData")
+
+ex.pattern <- "[^[:alnum:][:space:]!\\?@#,]"
+strs <- c("#Hel&lo hue^dh*edj? ebkj.c1'213, !  3%r)fj$3fj.... bkjweb @there.")
+new.strs <- gsub(ex.pattern, "", strs)
+new.strs
+new.new.strs <- gsub(new.patt, "", new.strs)
+new.new.strs
+
 head(neg.usernames)
+head(pos.usernames)
 
 # Most number of usernames in a negative tweet
 max(lengths(neg.tweets.df$usernames))

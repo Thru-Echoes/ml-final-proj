@@ -150,23 +150,25 @@ head(neg.tweets.df)
 
 neg.usernames.subset <- neg.usernames %>%
   arrange(desc(Frequency)) %>%
-  select(Username) %>%
+  select(Username, Frequency) %>%
   head(50)
 
 pos.usernames.subset <- pos.usernames %>%
   arrange(desc(Frequency)) %>%
-  select(Username) %>%
+  select(Username, Frequency) %>%
   head(50)
 
 neg.hashtags.subset <- neg.hashtags %>%
   arrange(desc(Frequency)) %>%
-  select(Hashtag) %>%
+  select(Hashtag, Frequency) %>%
   head(50)
 
 pos.hashtags.subset <- pos.hashtags %>%
   arrange(desc(Frequency)) %>%
-  select(Hashtag) %>%
+  select(Hashtag, Frequency) %>%
   head(50)
+
+save(list=c("neg.usernames.subset", "pos.usernames.subset", "neg.hashtags.subset", "pos.hashtags.subset"), file="userhashpop.RData")
 
 joined.usernames <- pos.usernames.subset %>%
   full_join(neg.usernames.subset, by=c("Username"="Username"))

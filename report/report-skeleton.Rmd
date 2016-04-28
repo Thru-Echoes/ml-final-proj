@@ -1,11 +1,26 @@
 ---
-title: "Sentiment Analysis: group COP"
-author: "Oliver Muellerklein, Chris, Paul"
-date: "April 27, 2016"
+title: "Twitter Sentiment Classification Analysis: Group COP"
+author: "Oliver Muellerklein, Chris Lin, Paul Land"
+date: "April 29, 2016"
 output: pdf_document
 ---
 
+```{r include=FALSE}
+suppressMessages(library(printr))
+```
+
+```{r include=FALSE}
+load("../data-mod-log/userhashpop.RData")
+load("../data/raw.RData")
+```
+
 ## 1 Introduction
+
+### Why Twitter Sentiment?
+
+A twitter sentiment classification model could be useful for determining the public's sentiment towards ideas, events, businesses, products, political figures, and many other possibilities. Interested parties can take tweets from Twitter and use a sentiment model to assess the outlook of their interests or the progress of their endeavors.
+
+### Our Goal (Model)
 
 #### 1.1 Overview
 
@@ -15,23 +30,45 @@ Here we describe the purpose of analyzing this. Why is it important to understan
 
 Give overview of what we are trying to solve in one paragraph (e.g. we will perform THIS TYPE OF ALGORITHM as well as THIS TYPE OF METHOD to determine if the RESPONSE can be predicted as 0 or 1 - below we will give an overview of our data cleaning, feature engineering, and feature and model selection processes)
 
-#### 1.2 Data
+## 2 Data, Cleaning, Exploration
 
-Explain data in more detail. Dimensions. Variance. Conceptual overview.
+### Introduction
+The raw data contains `4` variables: `ItemID`, `Sentiment`, `SentimentSource`, and `SentimentText`. There are `r nrow(raw.data)` total tweets. There are `r sum(raw.data$Sentiment == 1)` positive tweets, `r sum(raw.data$Sentiment == 0)` negative tweets, and `r sum(raw.data$Sentiment == -1)` unlabeled tweets.
 
-## 2 Exploration and Cleaning
+### Cleaning
+We only had one issue loading the raw data (`MaskedDataRaw.csv`) into `R`. We figured out that some tweets contained unmatched double quotation marks, which caused the `read.csv` function to misorganize the `.csv` file's information as it was loaded into `R`. We used a `regex` pattern to find and remove the unmatched quotes. Once we solved this issue, we were able to move on to the data exploration and feature engineering parts of our analysis.
+
+### Exploration
+
+We used numerous `regex` patterns to explore the tweets.
+
+### Feature Engineering
+
+#### Username/Hashtag Positive/Negative Score Features
+After we loaded the raw data into `R` and explored the tweets, we began the feature engineering process. We focused on using the strings of tweets to extract useful information and construct features. We did not use the `ItemID` and `SentimentSource` variables in the raw data. The first set of features we constructed were based on the frequency of usernames and hashtags in the tweets. We wanted to explore the possibility that certain usernames/hashtags tend to appear in more positive or more negative tweets. To build those features, we first divided the data set into a set of positive tweets and negative tweets. For each set, we calculated the frequencies of each unique username and hashtag. For example, `@mileycyrus` appeared `2833` times in the positive tweets. With this information, we gave each username and hashtag a positive and negative score. The scores were calculated by dividing each username's/hashtag's frequency by the postive/negative set's highest username/hashtag frequency. Finally, if a particular username/hashtag appeared in a tweet, we assigned the tweet a corresponding username/hashtag score. Ultimately, this process created `4` features: positive username score, positive hashtag score, negative username score, and negative hashtag score.
+
+The top 5 usernames found in the positive tweets:
+```{r, echo=FALSE}
+head(pos.usernames.subset, 5)
+```
+
+The top 5 usernames found in the negative tweets:
+```{r, echo=FALSE}
+head(neg.usernames.subset, 5)
+```
+
+#### Bag of Words Features
+We also created a large set of bag of words features. We constructed a positive corpus and a negative corpus. From these corpuses we determined which words appeared in the tweets most frequently. We took those words and created a large frequency matrix where each column in the matrix represented the frequency of a word.
 
 Here we dive into our approach. First steps with data. Maybe we used method X and then method Y to explore and then clean data.
 
 #### 2.1 Method X
 
-Method X described above. Here we maybe show table of exploritory results and / or math equations etc
+Method X described above. Here we maybe show table of exploratory results and/or math equations etc.
 
 #### 2.2 Method Y
 
 Method Y described above. Here we maybe explain how we cleaned the data and what we found.
-
-E.g. we found that username "@mileycirus" was the 2nd most popular username in negative tweets.
 
 ## 3 Cross Validation and Model Formation  
 
@@ -69,7 +106,6 @@ We performed several optimization and parameter tuning tricks, including:
 
 ## 6 Future Ideas
 
-There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).   
-
+There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).
 
 ##### END #####

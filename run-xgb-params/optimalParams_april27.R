@@ -7,6 +7,253 @@
 #   it only really accounts for ability of
 #       positive response
 
+
+##### Do 169feature runs and get variable importance 
+#####   and then do 164feature runs and get var importance 
+
+# Use only 50% of the data (should not need huge dataset for so many tweets)!
+
+set.seed(1)
+trainIndx169.50 <- sample(1:nrow(final_169features), size = floor(nrow(final_169features) * 0.5), replace = F)
+trainIndx169.25 <- sample(1:nrow(final_169features), size = floor(nrow(final_169features) * 0.25), replace = F)
+x169 <- final_169features
+y <- yAllLabel
+
+
+trainIndx164.50 <- sample(1:nrow(final_164features.df), size = floor(nrow(final_164features.df) * 0.5), replace = F)
+trainIndx164.25 <- sample(1:nrow(final_164features.df), size = floor(nrow(final_164features.df) * 0.25), replace = F)
+#x <- final_164features.df[trainIndx164.25, ]
+#y <- yAllLabel[trainIndx164.25]
+x164 <- final_164features.df 
+
+######### Create some fixed param set 
+
+nrounds.default = 1000
+param1 <- list("objective" = "binary:logistic",
+                   "max.depth" = 6,
+                   "eta" = 0.05,
+                   "gamma" = 0,
+                   "min_child_weight" = 1,
+                   "booster" = "gbtree",
+                   "subsample" = 0.5,
+                   "colsample_bytree" = 0.5,
+                   "lambda" = 1,
+                   "alpha" = 0)
+
+param2 <- list("objective" = "binary:logistic",
+               "max.depth" = 6,
+               "eta" = 0.1,
+               "gamma" = 0,
+               "min_child_weight" = 1,
+               "booster" = "gbtree",
+               "subsample" = 0.5,
+               "colsample_bytree" = 0.5,
+               "lambda" = 1,
+               "alpha" = 0)
+
+param3 <- list("objective" = "binary:logistic",
+               "max.depth" = 6,
+               "eta" = 0.5,
+               "gamma" = 0,
+               "min_child_weight" = 1,
+               "booster" = "gbtree",
+               "subsample" = 0.5,
+               "colsample_bytree" = 0.5,
+               "lambda" = 1,
+               "alpha" = 0)
+
+num.folds = 5 
+
+#########
+######### Do some CROSS VALIDATION! 
+#########
+
+
+# Cross validation
+cv.nround = 20
+bst169_1 <- xgb.cv(param = param1, data = as.matrix(x169[trainIndx169.25, ]), label = y[trainIndx169.25], nfold = num.folds, nrounds = cv.nround, verbose = 1,
+                   metrics = list("error", "auc", "logloss"))
+
+bst169_1_100 <- xgb.cv(param = param1, data = as.matrix(x169[trainIndx169.25, ]), label = y[trainIndx169.25], nfold = num.folds, nrounds = 100, verbose = 1,
+                   metrics = list("error", "auc", "logloss"))
+
+# Find min mean error and respective index
+minError169_1 <- min(bst169_1[, test.error.mean])
+idxminError169_1 <- which.min(bst169_1[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC169_1 <- max(bst169_1[, test.auc.mean])
+idxmaxAUC169_1 <- which.max(bst169_1[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss169_1 <- min(bst169_1[, test.logloss.mean])
+idxminLogloss169_1 <- which.min(bst169_1[, test.logloss.mean])
+
+###################
+################### 
+###################
+
+#### Larger eta - 0.1 
+
+bst169_2_100 <- xgb.cv(param = param2, data = as.matrix(x169[trainIndx169.25, ]), label = y[trainIndx169.25], nfold = num.folds, nrounds = 100, verbose = 1,
+                       metrics = list("error", "auc", "logloss"))
+
+#### Even Larger eta - 0.5
+
+bst169_3_100 <- xgb.cv(param = param3, data = as.matrix(x169[trainIndx169.25, ]), label = y[trainIndx169.25], nfold = num.folds, nrounds = 100, verbose = 1,
+                       metrics = list("error", "auc", "logloss"))
+
+
+###################
+################### Now do this again for param2 and param3 
+###################
+
+#bst164_1 <- xgb.cv(param = param1, data = as.matrix(x164[trainIndx164.25, ]), label = y[trainIndx164.25], nfold = num.folds, nrounds = cv.nround, verbose = 1,
+ #                  metrics = list("error", "auc", "logloss"))
+
+bst164_1_100 <- xgb.cv(param = param1, data = as.matrix(x164[trainIndx164.25, ]), label = y[trainIndx164.25], nfold = num.folds, nrounds = 100, verbose = 1,
+                   metrics = list("error", "auc", "logloss"))
+
+# Find min mean error and respective index
+minError164_1 <- min(bst164_1[, test.error.mean])
+idxminError164_1 <- which.min(bst164_1[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC164_1 <- max(bst164_1[, test.auc.mean])
+idxmaxAUC164_1 <- which.max(bst164_1[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss164_1 <- min(bst164_1[, test.logloss.mean])
+idxminLogloss164_1 <- which.min(bst164_1[, test.logloss.mean])
+
+###################
+################### Now do this again for param2 and param3 
+###################
+
+
+
+# Cross validation
+cv.nround = 1000
+
+bst169_2 <- xgb.cv(param = param2, data = as.matrix(x169[trainIndx169.50, ]), label = y[trainIndx169.50], nfold = num.folds, nrounds = cv.nround, verbose = 0,
+                   metrics = list("error", "auc", "logloss"))
+
+bst169_3 <- xgb.cv(param = param3, data = as.matrix(x169[trainIndx169.50, ]), label = y[trainIndx169.50], nfold = num.folds, nrounds = cv.nround, verbose = 0,
+                   metrics = list("error", "auc", "logloss"))
+
+# Find min mean error and respective index
+minError169_2 <- min(bst169_2[, test.error.mean])
+idxminError169_2 <- which.min(bst169_2[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC169_2 <- max(bst169_2[, test.auc.mean])
+idxmaxAUC169_2 <- which.max(bst169_2[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss169_2 <- min(bst169_2[, test.logloss.mean])
+idxminLogloss169_2 <- which.min(bst169_2[, test.logloss.mean])
+
+# Find min mean error and respective index
+minError169_3 <- min(bst169_3[, test.error.mean])
+idxminError169_3 <- which.min(bst169_3[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC169_3 <- max(bst169_3[, test.auc.mean])
+idxmaxAUC169_3 <- which.max(bst169_3[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss169_3 <- min(bst169_3[, test.logloss.mean])
+idxminLogloss169_3 <- which.min(bst169_3[, test.logloss.mean])
+
+
+################### AND NOW DO THE SAME FOR 164features 
+
+bst164_2 <- xgb.cv(param = param2, data = as.matrix(x164[trainIndx164.50, ]), label = y[trainIndx164.50], nfold = num.folds, nrounds = cv.nround, verbose = 0,
+                   metrics = list("error", "auc", "logloss"))
+
+bst164_3 <- xgb.cv(param = param3, data = as.matrix(x164[trainIndx164.50, ]), label = y[trainIndx164.50], nfold = num.folds, nrounds = cv.nround, verbose = 0,
+                   metrics = list("error", "auc", "logloss"))
+
+# Find min mean error and respective index
+minError164_2 <- min(bst164_2[, test.error.mean])
+idxminError164_2 <- which.min(bst164_2[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC164_2 <- max(bst164_2[, test.auc.mean])
+idxmaxAUC164_2 <- which.max(bst164_2[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss164_2 <- min(bst164_2[, test.logloss.mean])
+idxminLogloss164_2 <- which.min(bst164_2[, test.logloss.mean])
+
+# Find min mean error and respective index
+minError164_3 <- min(bst164_3[, test.error.mean])
+idxminError164_3 <- which.min(bst164_3[, test.error.mean])
+
+# Find max mean auc and respective index
+maxAUC164_3 <- max(bst164_3[, test.auc.mean])
+idxmaxAUC164_3 <- which.max(bst164_3[, test.auc.mean])
+
+# Find min logloss and respective index
+minLogloss164_3 <- min(bst164_3[, test.logloss.mean])
+idxminLogloss164_3 <- which.min(bst164_3[, test.logloss.mean])
+
+
+#########
+######### Do 169feature run 
+#########
+
+
+model169_1 <- xgboost(param = param1, data = as.matrix(x169[trainIndx169.50, ]), label = y[trainIndx169.50], nrounds = nrounds.default, verbose = 2)
+
+xgb.save(model169_1, "run-svm-xgb/April27_169features_xgb_model1")
+
+# Make prediction
+pred169_1 = predict(model169_1, as.matrix(x169[-trainIndx169.50, ]))
+
+# first 10 lines of model
+model169_1.seeModel <- xgb.dump(model169_1, with.stats = T)
+model169_1.seeModel[1:10]
+
+names <- dimnames(x169[trainIndx169.50, ])[[2]]
+varImp169_1 <- xgb.importance(names, model = model169_1)
+# get top 10 most important features
+xgb.plot.importance(varImp169_1[1:10, ])
+
+# tree graph
+#xgb.plot.tree(feature_names = names, model = model169_1, n_first_tree = 2)
+
+
+######### Do 164feature run 
+
+
+model164_1 <- xgboost(param = param1, data = as.matrix(x164[trainIndx164.50, ]), label = y[trainIndx164.50], nrounds = nrounds.default, verbose = 2)
+
+xgb.save(model164_1, "run-svm-xgb/April27_164features_xgb_model1")
+
+# Make prediction
+pred164_1 = predict(model164_1, as.matrix(x164[-trainIndx164.50, ]))
+
+# first 10 lines of model
+model164_1.seeModel <- xgb.dump(model164_1, with.stats = T)
+model164_1.seeModel[1:10]
+
+names <- dimnames(x164[trainIndx164.50, ])[[2]]
+varImp164_1 <- xgb.importance(names, model = model164_1)
+# get top 10 most important features
+xgb.plot.importance(varImp164_1[1:10, ])
+
+# tree graph
+#xgb.plot.tree(feature_names = names, model = model164_1, n_first_tree = 2)
+
+
+
+
+
+
+###### OLD CODE - APRIL26 - KEPT AS REFERENCE ########
+
+
 ########################################
 ############# PULL IN DATA #############
 ########################################
@@ -36,6 +283,8 @@ x <- final_169features
 y <- yAllLabel
 
 
+
+
 ###### After 250 random parameter runs - try again with only 164 tf-idf features: 
 #tfIdf.labeled <- tf_idf[50001:1578627, ]
 final_164features <- tfIdf.labeled 
@@ -46,11 +295,8 @@ save(final_164features.df, file = "run-svm-xgb/April27_xgbTrainAllLabel_164featu
 set.seed(1)
 trainIndx164.25 <- sample(1:nrow(final_164features.df), size = floor(nrow(final_164features.df) * 0.25), replace = F)
 trainIndx164.75 <- sample(1:nrow(final_164features.df), size = floor(nrow(final_164features.df) * 0.75), replace = F)
-#x <- final_164features.df[trainIndx164.25, ]
-#y <- yAllLabel[trainIndx164.25]
 
-x <- final_164features.df 
-y <- yAllLabel 
+
 
 trainIndx164.25 <- sample(1:nrow(x), size = floor(nrow(x) * 0.75), replace = F)
 

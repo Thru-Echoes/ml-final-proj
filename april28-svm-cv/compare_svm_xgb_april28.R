@@ -8,6 +8,8 @@ load("data/deltaTF_IDF_ImpFeatures.rda")
 x20 <- deltaTF_IDF_ImpFeatures[50001:1578627, ]
 save(x20, file = "april28-svm-cv/April28_20features_important.rda")
 
+load("april28-svm-cv/April28_20features_important.rda")
+
 load("data/y_AllRaw.rda")
 y50k.unlabeled <- y_AllRaw[1:50000]
 yLabeled <- y_AllRaw[50001:1578627]
@@ -20,6 +22,8 @@ set.seed(1)
 trainIndx290.20 <- sample(1:nrow(x290), size = floor(nrow(x290) * 0.2), replace = F)
 
 trainIndx20.20perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.2), replace = F)
+
+trainIndx20.10perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.1), replace = F)
 
 x290.testing <- x290[trainIndx290.20, ]
 y290.testing <- yLabeled[trainIndx290.20]
@@ -282,8 +286,12 @@ print(paste("test-error (sparse.default) = ", err.sparse.param4))
 
 trainIndx <- trainIndx20.20perc
 
+# -or-
+
+trainIndx <- trainIndx20.10perc
+
 set.seed(2)
-testIndx <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.08), replace = F)
+testIndx <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.025), replace = F)
 set.seed(1)
 
 x <- x20
@@ -296,7 +304,113 @@ yTest = as.factor(y)
 
 #trainIndx <- indx290.train
 
+########################################################
+########################################################
+########################################################
+########################################################
+
+##### Trial runs with Oliver's laptop - April 28 
+
+##### If not using Oliver's laptop go below this section 
+
+########################################################
+########################################################
+########################################################
+########################################################
+
+### These runs use a subsample of 191k tweets 
+### and then it breaks them down into 80% train, 20% test 
+
+# this means: 152k train, 38k test tweets 
+
+### ALSO! I am reducing the range of parameters in grid search
+
 #### TRY SOME SVM
+set.seed(1)
+
+seqC = c( 0.01, 0.1, 1, 10, 100)
+n.seqC = length(seqC)
+CVerror = rep(NA, times = n.seqC)
+
+for (i in 1:n.seqC) {
+  print("5-fold CV search for linear SVM: ")
+  print(i)
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
+               kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
+  CVerror[i] = svmCV@cross
+  fileIter <- paste("OCM_laptop_CVerror_lin", i, sep = "_")
+  rdaLoc <- paste(fileIter, ".rda", sep = "")
+  csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
+}
+
+save(CVerror, "april28-svm-cv/OCM_laptop_20features_Lin.SVM_CVerror.rda")
+
+minC_LinearSVM = min(seqC[which.min(CVerror)])
+train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc", 
+                       kernel="vanilladot", scaled = c(), C = minC_LinearSVM)
+predict_LinearSVM = predict(train_LinearSVM, newdata = xTest[testIndx, ])
+
+save(minC_LinearSVM, file = "april28-svm-cv/OCM_laptop_20features_minC_LinearSVM.rda")
+save(train_LinearSVM, file = "april28-svm-cv/OCM_laptop_20features_train_LinearSVM.rda")
+save(predict_LinearSVM, file = "april28-svm-cv/OCM_laptop_20features_predict_LinearSVM.rda")
+
+
+##Perform Gaussian kernel SVM modeling and prediction.
+seqC = c( 0.01, 0.1, 1, 10, 100)
+seqSigma = c(0.01, 0.1, 1, 10, 100)
+
+permuPar = expand.grid(seqC, seqSigma)
+n.permuPar = nrow(permuPar)
+
+CVError.GSVM = rep(NA, times = n.permuPar)
+
+# 5-fold CV with 20% of the data 
+for (i in 1:n.permuPar) {
+  print("Grid search Guassian Kernel SVM: ")
+  print(i)
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
+               kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5, 
+               kpar = list(sigma = permuPar[i , 2]))
+  CVError.GSVM[i] = svmCV@cross
+  fileIter <- paste("OCM_laptop_CVerror_gaussian", i, sep = "_")
+  rdaLoc <- paste(fileIter, ".rda", sep = "")
+  csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
+}
+
+save(CVError.GSVM, "april28-svm-cv/OCM_laptop_20features_GSVM_CVerror.rda")
+
+minC_GSVM = permuPar[min(which.min(CVError.GSVM)), 1]
+minSigma_GSVM = permuPar[min(which.min(CVError.GSVM)), 2]
+min_GSVM = c(minC_GSVM, minSigma_GSVM)
+
+save(minC_GSVM, "april28-svm-cv/OCM_laptop_20features_minC_GSVM.rda")
+save(minSigma_GSVM, "april28-svm-cv/OCM_laptop_20features_minSigma_GSVM.rda")
+
+train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
+                  kernel = "rbfdot", scaled = c(), C = minC_GSVM, 
+                  kpar = list(sigma = minSigma_GSVM))
+
+predict_GSVM = predict(train_GSVM, newdata = xTest[testIndx, ])
+
+save(min_GSVM, file = "april28-svm-cv/OCM_laptop_20features_min_GSVM.rda")
+save(train_GSVM, file = "april28-svm-cv/OCM_laptop_20features_train_GSVM.rda")
+save(predict_GSVM, file = "april28-svm-cv/OCM_laptop_20features_predict_GSVM.rda")
+
+########################################################
+########################################################
+########################################################
+########################################################
+
+##### If not using Oliver's laptop - start here - 
+
+########################################################
+########################################################
+########################################################
+########################################################
 
 set.seed(1)
 

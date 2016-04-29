@@ -1,12 +1,12 @@
 ##Perform linear SVM modeling and prediction.
 load("data/deltaTF_IDF_AllFeatures.rda")
 deltaTF_labeled <- deltaTF_IDF_AllFeatures[50001:1578627, ]
-save(deltaTF_labeled, file = "april28-svm-cv/April28_deltaTF_labeled_290features.rda")
+#save(deltaTF_labeled, file = "april28-svm-cv/April28_deltaTF_labeled_290features.rda")
 x290 <- deltaTF_labeled
 
 load("data/deltaTF_IDF_ImpFeatures.rda")
 x20 <- deltaTF_IDF_ImpFeatures[50001:1578627, ]
-save(x20, file = "april28-svm-cv/April28_20features_important.rda")
+#save(x20, file = "april28-svm-cv/April28_20features_important.rda")
 
 load("april28-svm-cv/April28_20features_important.rda")
 
@@ -296,7 +296,7 @@ trainIndx <- trainIndx20.20perc
 
 trainIndx <- trainIndx20.10perc
 
-# -or- 
+# -or-
 
 trainIndx <- trainIndx20.005perc
 
@@ -316,7 +316,7 @@ yTest = as.factor(y)
 
 #trainIndx <- indx290.train
 
-# -or- 
+# -or-
 
 ####
 
@@ -326,11 +326,11 @@ y <- yLabeled[trainIndx20.01perc]
 x <- x20[trainIndx20.005perc, ]
 y <- yLabeled[trainIndx20.005perc]
 
-# do 90 / 10 split 
+# do 90 / 10 split
 
 trainIndx <- sample(1:nrow(x), size = floor(nrow(x) * 0.9), replace = F)
 
-# do 75 / 25 split 
+# do 75 / 25 split
 
 trainIndx <- sample(1:nrow(x), size = floor(nrow(x) * 0.75), replace = F)
 
@@ -347,19 +347,19 @@ yTest = as.factor(y)
 ########################################################
 ########################################################
 
-##### Trial runs with Oliver's laptop - April 28 
+##### Trial runs with Oliver's laptop - April 28
 
-##### If not using Oliver's laptop go below this section 
+##### If not using Oliver's laptop go below this section
 
 ########################################################
 ########################################################
 ########################################################
 ########################################################
 
-### These runs use a subsample of 191k tweets 
-### and then it breaks them down into 80% train, 20% test 
+### These runs use a subsample of 191k tweets
+### and then it breaks them down into 80% train, 20% test
 
-# this means: 152k train, 38k test tweets 
+# this means: 152k train, 38k test tweets
 
 ### ALSO! I am reducing the range of parameters in grid search
 
@@ -373,7 +373,7 @@ CVerror = rep(NA, times = n.seqC)
 for (i in 1:n.seqC) {
   print("5-fold CV search for linear SVM: ")
   print(i)
-  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc",
                kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
   CVerror[i] = svmCV@cross
   fileIter <- paste("OCM_laptop_CVerror_lin", i, sep = "_")
@@ -386,7 +386,7 @@ for (i in 1:n.seqC) {
 save(CVerror, "april28-svm-cv/OCM_laptop_20features_Lin.SVM_CVerror.rda")
 
 minC_LinearSVM = min(seqC[which.min(CVerror)])
-train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc", 
+train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc",
                        kernel="vanilladot", scaled = c(), C = minC_LinearSVM)
 predict_LinearSVM = predict(train_LinearSVM, newdata = xTest[testIndx, ])
 
@@ -404,12 +404,12 @@ n.permuPar = nrow(permuPar)
 
 CVError.GSVM = rep(NA, times = n.permuPar)
 
-# 5-fold CV with 20% of the data 
+# 5-fold CV with 20% of the data
 for (i in 1:n.permuPar) {
   print("Grid search Guassian Kernel SVM: ")
   print(i)
-  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
-               kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5, 
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc",
+               kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5,
                kpar = list(sigma = permuPar[i , 2]))
   CVError.GSVM[i] = svmCV@cross
   fileIter <- paste("OCM_laptop_CVerror_gaussian", i, sep = "_")
@@ -428,8 +428,8 @@ min_GSVM = c(minC_GSVM, minSigma_GSVM)
 save(minC_GSVM, "april28-svm-cv/OCM_laptop_20features_minC_GSVM.rda")
 save(minSigma_GSVM, "april28-svm-cv/OCM_laptop_20features_minSigma_GSVM.rda")
 
-train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
-                  kernel = "rbfdot", scaled = c(), C = minC_GSVM, 
+train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc",
+                  kernel = "rbfdot", scaled = c(), C = minC_GSVM,
                   kpar = list(sigma = minSigma_GSVM))
 
 predict_GSVM = predict(train_GSVM, newdata = xTest[testIndx, ])
@@ -443,7 +443,7 @@ save(predict_GSVM, file = "april28-svm-cv/OCM_laptop_20features_predict_GSVM.rda
 ########################################################
 ########################################################
 
-##### If not using Oliver's laptop - start here - 
+##### If not using Oliver's laptop - start here -
 
 ########################################################
 ########################################################
@@ -460,7 +460,7 @@ CVerror = rep(NA, times = n.seqC)
 for (i in 1:n.seqC) {
   print("5-fold CV search for linear SVM: ")
   print(i)
-  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc",
                kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
   CVerror[i] = svmCV@cross
   fileIter <- paste("01perc_CVerror_lin", i, sep = "_")
@@ -473,7 +473,7 @@ for (i in 1:n.seqC) {
 save(CVerror, file = "april28-svm-cv/April28_20features_Lin.SVM_01perc_CVerror.rda")
 
 minC_LinearSVM = min(seqC[which.min(CVerror)])
-train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc", 
+train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc",
                        kernel="vanilladot", scaled = c(), C = minC_LinearSVM)
 predict_LinearSVM = predict(train_LinearSVM, newdata = xTest[-trainIndx, ])
 
@@ -493,12 +493,12 @@ n.permuPar = nrow(permuPar)
 
 CVError.GSVM = rep(NA, times = n.permuPar)
 
-# 5-fold CV with 5% or 10% or 20% of the data 
+# 5-fold CV with 5% or 10% or 20% of the data
 for (i in 1:n.permuPar) {
   print("Grid search Guassian Kernel SVM: ")
   print(i)
-  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
-               kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5, 
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc",
+               kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5,
                kpar = list(sigma = permuPar[i , 2]))
   CVError.GSVM[i] = svmCV@cross
   fileIter <- paste("01perc_CVerror_gaussian", i, sep = "_")
@@ -517,8 +517,8 @@ min_GSVM = c(minC_GSVM, minSigma_GSVM)
 save(minC_GSVM, file = "april28-svm-cv/April28_20features_01perc_minC_GSVM.rda")
 save(minSigma_GSVM, file = "april28-svm-cv/April28_20features_01perc_minSigma_GSVM.rda")
 
-train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
-                  kernel = "rbfdot", scaled = c(), C = minC_GSVM, 
+train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc",
+                  kernel = "rbfdot", scaled = c(), C = minC_GSVM,
                   kpar = list(sigma = minSigma_GSVM))
 
 predict_GSVM = predict(train_GSVM, newdata = xTest[-trainIndx, ])
@@ -537,13 +537,13 @@ n.seqC = length(seqC)
 CVerror = rep(NA, times = n.seqC)
 
 for (i in 1:n.seqC){
-  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
+  svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc",
                kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
   CVerror[i] = svmCV@cross
 }
 
 minC_LinearSVM = min(seqC[which.min(CVerror)])
-train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc", 
+train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc",
                        kernel="vanilladot", scaled = c(), C = minC_LinearSVM)
 predict_LinearSVM = predict(train_LinearSVM, newdata = xTest)
 
@@ -551,7 +551,7 @@ save(minC_LinearSVM, file = "april28-svm-cv/April28_20features_minC_LinearSVM.rd
 save(train_LinearSVM, file = "april28-svm-cv/April28_20features_train_LinearSVM.rda")
 save(predict_LinearSVM, file = "april28-svm-cv/April28_20features_predict_LinearSVM.rda")
 
-############### OLD 
+############### OLD
 
 seqC = c(10, 20, 30, 50)
 n.seqC = length(seqC)

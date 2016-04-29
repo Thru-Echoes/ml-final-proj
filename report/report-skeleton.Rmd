@@ -6,46 +6,42 @@ output: pdf_document
 ---
 
 ```{r include=FALSE}
-suppressMessages(library(printr))
+#suppressMessages(library(printr))
 ```
 
 ```{r include=FALSE}
 load("../data-mod-log/userhashpop.RData")
 load("../data/raw.RData")
+load("showCV_table.RData")
 ```
 
-## 1 Introduction
+# 1 Introduction
 
-### Why Twitter Sentiment?
+### 1.1 Why Twitter Sentiment?
 
-A twitter sentiment classification model could be useful for determining the public's sentiment towards ideas, events, businesses, products, political figures, and many other possibilities. Interested parties can take tweets from Twitter and use a sentiment model to assess the outlook of their interests or the progress of their endeavors.
+  Social media has rapidly become a substantial mode of communication due to a constant influx of new users, modes of language expression (*e.g. emoticons*), and units of socio-cultural importance. From both a sociological and information theory standpoint due, social media platforms such as Twitter provide an unprecendented depth of knowledge and insight into language and communication in a human-technology infused ecosystem. With an average of 6,000 tweets sent per second and 500 million per day [1], the use of Twitter for self-expression, group-based decision making, and socio-cultural communication is an essential component of modern society. The ability to analyze and predict trends in tweet sentiment may prove extremely useful through: a) financial benefits for industry, b) exploring human behavior within socio-economic, culutural, and linguistic research, and c) discovering novel modes of language in a world where human life and technological advancement are so intimidately related.
 
-### Our Goal (Model)
+### 1.2 Our Data
 
-#### 1.1 Overview
+  We were provided a set of nearly *1.6 million tweets*, as character strings, and corresponding sentiment scores (*0 or 1*) of all but the first 50,000 observations. This first non-sentiment subsample of the data is put aside as the final data to test predictions against (*i.e. compare y_hat to*). There was no metadata provided - for example, we did not obtain the user IDs nor names corresponding to each tweet. Our data consistently of solely the tweet, the source, and sentiment.
 
-Here we describe the purpose of analyzing this. Why is it important to understand this data? What do we gain from analyzing this data?
+<strong>Need to actually make the TeX yHat! Also - need some other equations.</strong>
 
-<strong>What do we gain by being able to predict with this data?</strong> Think big picture here.
+### 1.3 Let's Explore this Data!
 
-Give overview of what we are trying to solve in one paragraph (e.g. we will perform THIS TYPE OF ALGORITHM as well as THIS TYPE OF METHOD to determine if the RESPONSE can be predicted as 0 or 1 - below we will give an overview of our data cleaning, feature engineering, and feature and model selection processes)
+##### 1.3.1 First Look
 
-## 2 Data, Cleaning, Exploration
+  Initially we found that nearly all tweets came from source <code>Sentiment140</code>. However, a small subsample of the tweets were sourced from <code>Kaggle</code>, which we found out was from a Twitter sentiment challenge on Kaggle that was based on movie sentiment [2]. Another attribute of the data that we found (and corrected) was the existence of unmatched double quotation marks within a set of tweets. Using the <code>Regex</code> package in *R* we replaced such quotation marks.
 
-### Introduction
-The raw data contains `4` variables: `ItemID`, `Sentiment`, `SentimentSource`, and `SentimentText`. There are `r nrow(raw.data)` total tweets. There are `r sum(raw.data$Sentiment == 1)` positive tweets, `r sum(raw.data$Sentiment == 0)` negative tweets, and `r sum(raw.data$Sentiment == -1)` unlabeled tweets.
+##### 1.3.2 Data Breakdown
 
-### Cleaning
-We only had one issue loading the raw data (`MaskedDataRaw.csv`) into `R`. We figured out that some tweets contained unmatched double quotation marks, which caused the `read.csv` function to misorganize the `.csv` file's information as it was loaded into `R`. We used a `regex` pattern to find and remove the unmatched quotes. Once we solved this issue, we were able to move on to the data exploration and feature engineering parts of our analysis.
+  The raw data contains `4` variables: `ItemID`, `Sentiment`, `SentimentSource`, and `SentimentText`. There are `r nrow(raw.data)` total tweets. There are `r sum(raw.data$Sentiment == 1)` positive tweets, `r sum(raw.data$Sentiment == 0)` negative tweets, and `r sum(raw.data$Sentiment == -1)` unlabeled tweets. Furthermore, we used numerous `regex` patterns to explore the tweets.
 
-### Exploration
+# 2 Feature Engineering
 
-We used numerous `regex` patterns to explore the tweets.
+### 2.1 Username/Hashtag Positive/Negative Score Features
 
-### Feature Engineering
-
-#### Username/Hashtag Positive/Negative Score Features
-After we loaded the raw data into `R` and explored the tweets, we began the feature engineering process. We focused on using the strings of tweets to extract useful information and construct features. We did not use the `ItemID` and `SentimentSource` variables in the raw data. The first set of features we constructed were based on the frequency of usernames and hashtags in the tweets. We wanted to explore the possibility that certain usernames/hashtags tend to appear in more positive or more negative tweets. To build those features, we first divided the data set into a set of positive tweets and negative tweets. For each set, we calculated the frequencies of each unique username and hashtag. For example, `@mileycyrus` appeared `2833` times in the positive tweets. With this information, we gave each username and hashtag a positive and negative score. The scores were calculated by dividing each username's/hashtag's frequency by the postive/negative set's highest username/hashtag frequency. Finally, if a particular username/hashtag appeared in a tweet, we assigned the tweet a corresponding username/hashtag score. Ultimately, this process created `4` features: positive username score, positive hashtag score, negative username score, and negative hashtag score.
+  After we loaded the raw data into `R` and explored the tweets, we began the feature engineering process. We focused on using the strings of tweets to extract useful information and construct features. We did not use the `ItemID` and `SentimentSource` variables in the raw data. The first set of features we constructed were based on the frequency of usernames and hashtags in the tweets. We wanted to explore the possibility that certain usernames/hashtags tend to appear in more positive or more negative tweets. To build those features, we first divided the data set into a set of positive tweets and negative tweets. For each set, we calculated the frequencies of each unique username and hashtag. For example, `@mileycyrus` appeared `2833` times in the positive tweets. With this information, we gave each username and hashtag a positive and negative score. The scores were calculated by dividing each username's/hashtag's frequency by the postive/negative set's highest username/hashtag frequency. Finally, if a particular username/hashtag appeared in a tweet, we assigned the tweet a corresponding username/hashtag score. Ultimately, this process created `4` features: positive username score, positive hashtag score, negative username score, and negative hashtag score.
 
 The top 5 usernames found in the positive tweets:
 ```{r, echo=FALSE}
@@ -57,42 +53,73 @@ The top 5 usernames found in the negative tweets:
 head(neg.usernames.subset, 5)
 ```
 
-#### Bag of Words Features
-We also created a large set of bag of words features. We constructed a positive corpus and a negative corpus. From these corpuses we determined which words appeared in the tweets most frequently. We took those words and created a large frequency matrix where each column in the matrix represented the frequency of a word.
+### 2.2 Bag of Words Features
 
-Here we dive into our approach. First steps with data. Maybe we used method X and then method Y to explore and then clean data.
+  We also incorporated a **Bag of Words (BOW)** approach with **delta Term Frequency - Inverse Document Frequency** (delta TF-IDF, explained below) to construct a corpus of positive, negative, and relative term frequencies. These terms were used to generate a large sparse matrix with direction relative term frequencies (positive - negative tweets). Due to the practical limitations of computational cost, we generated our corpus and corresponding frequencies based on all words that appeared at least 1% of the time. This limited our word (term) choice to **118**. However, we also decided to incorporate key special terms and character usage that had high correlation and frequencies with sentiment. For example, we incorporated exclamation mark and *LOL* usage as seperate features. In all, we generated a 290 feature sparse matrix of delta TF-IDF based frequencies, 4 additional score features based on frequencies of usernames and hashtags, and, eventually, a 20 feature subsample based on feature selection methods (described below).  
 
-#### 2.1 Method X
+# 3 Cross Validation and Model Formation
 
-Method X described above. Here we maybe show table of exploratory results and/or math equations etc.
+### 3.1 Feature Selection Overview
 
-#### 2.2 Method Y
+  Through various feature importance and selection methods, we found that a majority of the loss reduction within random forest and boosting methods (via XGBoost) was captured by a small subset of our total features. For example, we approached the problem initial with <strong>50</strong> features from the respective word frequencies via Bag-of-Words and four normalized features corresponding to usernames and hashtags that occurred most frequently with both positive and negative tweets. Feature selection in both random forest and gradient boosting (XGBoost) dramatically selected for the four normalized username and hashtag predictors. Furthermore, the same pattern existed when increasing our Bag-of-Words term frequency usage from 50 to 118 words. We had also found that our initial models - including logistic regression with regularization, random forest, and gradient boosting tree ensemble (XGBoost) - generally obtained significantly greater accuracy and decreased misclassification for positive than negative tweets. For example, one method produced an accuracy above 80% for positive and just over 50% for negative tweets. As expected, when we compare the negative prediction accuracy and misclassification rate to random guessing we see minimal to no benefit.
 
-Method Y described above. Here we maybe explain how we cleaned the data and what we found.
+  One possible explanation for the discrepancy in sentiment prediction may be due to feature engineering bias. The total number of positive and negative tweets was nearly equal in the original dataset. However, our <strong>Bag-of-Words</strong> and <strong>Term Frequency - Inverse Document Frequency</strong> methods may not have captured the vast array of word choices for negative tweets as we simply took words that occurred in at least 1% of all tweet words. This rests on the assumption that single word use and frequency either 1) give a general, accurate account for tweet sentiment differences and 2) the underlining distributions of positive and negative word counts and frequencies are equal. The first point could be explained by claiming that some <strong>n-gains</strong> or set of words would give stronger features. The second point comes from the statistical conceptualization of finding signal within noise of data. To elaborate, in order to use the word frequencies and differences between positive and negative tweets from the words that appeared in at least 1% of tweet words, we must assume that such words are a valid subsample. Thus, we are assuming that the 118 words that occurred in at least 1% of the total tweet words are an accurate representation of both the actual word frequencies (for all words) in all tweets and the differences in usage between positive and negative sentiment.
 
-## 3 Cross Validation and Model Formation  
+  On the other hand, we used normalized username and hashtag occurrence scores for positive and negative features. These four features were far less sparse than the Bag-of-Words and TF-IDF generated features - i.e. far less observations with <strong>0</strong>. This can bias the importance of those features in the decrease in misclassification (loss, similar principle can apply for other forms of optimization) for each node split.
 
-#### 3.1 Feature Selection Overview
+### 3.2 Delta TF-IDF
 
-Through various feature importance and selection methods, we found that a majority of the loss reduction within random forest and boosting methods (via XGBoost) was captured by a small subset of our total features. For example, we approached the problem initial with <strong>50</strong> features from the respective word frequencies via Bag-of-Words and four normalized features corresponding to usernames and hashtags that occurred most frequently with both positive and negative tweets. Feature selection in both random forest and gradient boosting (XGBoost) dramatically selected for the four normalized username and hashtag predictors. Furthermore, the same pattern existed when increasing our Bag-of-Words term frequency usage from 50 to 118 words. We had also found that our initial models - including logistic regression with regularization, random forest, and gradient boosting tree ensemble (XGBoost) - generally obtained significantly greater accuracy and decreased misclassification for positive than negative tweets. For example, one method produced an accuracy above 80% for positive and just over 50% for negative tweets. As expected, when we compare the negative prediction accuracy and misclassification rate to random guessing we see minimal to no benefit.
+##### 3.2.1 Standard TF-IDF
 
-One possible explanation for the discrepancy in sentiment prediction may be due to feature engineering bias. The total number of positive and negative tweets was nearly equal in the original dataset. However, our <strong>Bag-of-Words</strong> and <strong>Term Frequency - Inverse Document Frequency</strong> methods may not have captured the vast array of word choices for negative tweets as we simply took words that occurred in at least 1% of all tweet words. This rests on the assumption that single word use and frequency either 1) give a general, accurate account for tweet sentiment differences and 2) the underlining distributions of positive and negative word counts and frequencies are equal. The first point could be explained by claiming that some <strong>n-gains</strong> or set of words would give stronger features. The second point comes from the statistical conceptualization of finding signal within noise of data. To elaborate, in order to use the word frequencies and differences between positive and negative tweets from the words that appeared in at least 1% of tweet words, we must assume that such words are a valid subsample. Thus, we are assuming that the 118 words that occurred in at least 1% of the total tweet words are an accurate representation of both the actual word frequencies (for all words) in all tweets and the differences in usage between positive and negative sentiment.
+  We can apply the <strong>TF-IDF</strong> principle to the top occurrences of both usernames and hashtags to get the corresponding sparse features in the same format as the 118 word frequencies. We determined the number of important usernames and hashtags by analyzing the total number of unique values, e.g. unique usernames in all tweets, and finding the total number of occurrences per element. From this data exploration method we found that the username <code>@mileycirus</code> appeared as the second most frequented tweeted username in all negative tweets. The top three negatively tweeted usernames appeared more than 1,000 times but dropped significantly by the fourth or fifth most population negative username. We were able to pick the top 50 usernames based on occurrences in positive, negative, or all tweets. Similarly, we found the top 50 hashtags. These top users and hashtags were fed into the TF-IDF algorithms we created as terms and their corresponding sparse predictors were augmented to the data as features.
 
-On the other hand, we used normalized username and hashtag occurrence scores for positive and negative features. These four features were far less sparse than the Bag-of-Words and TF-IDF generated features - i.e. far less observations with <strong>0</strong>. This can bias the importance of those features in the decrease in misclassification (loss, similar principle can apply for other forms of optimization) for each node split.
+##### 3.2.2 To Delta
 
-#### 3.2 Overview of TF-IDF Method  
+  We augmented our 118 words with an addition set of high occurrence _usernames_, _hashtags_, and _special terms_ - such as special characters that do not necessarily appear often but are consistent with either positive or negative tweets - thus creating a sparse matrix of 290 predictors. This was fed into <strong>Random Choice, Logistic Regression, Support Vector Machines (SVM), and Gradient Boosted Tree Ensembles (via XGBoost)</strong>. However, after initial model runs with poor performance we decided to explore the use of *delta TF-IDF* to create vectorizations of our sparse matrix features. The directionality is calculated by assigning the features, as described above, with positive or negative signs depending on the relative frequency and relationship of the corresponding term in positive and negative tweets.
 
-We can apply the <strong>TF-IDF</strong> principle to the top occurrences of both usernames and hashtags to get the corresponding sparse features in the same format as the 118 word frequencies. We determined the number of important usernames and hashtags by analyzing the total number of unique values, e.g. unique usernames in all tweets, and finding the total number of occurrences per element. From this data exploration method we found that the username <code>@mileycirus</code> appeared as the second most frequented tweeted username in all negative tweets. The top three negatively tweeted usernames appeared more than 1,000 times but dropped significantly by the fourth or fifth most population negative username. We were able to pick the top 50 usernames based on occurrences in positive, negative, or all tweets. Similarly, we found the top 50 hashtags. These top users and hashtags were fed into the TF-IDF algorithms we created as terms and their corresponding sparse predictors were augmented to the data as features.
+### 3.3 Incorporating Normalized Scoring
 
-From the 118 word frequencies, 50 usernames, 50 hashtags, and an additional 45 _special terms_ - such as special characters that do not necessarily appear often but are consistent with either positive or negative tweets - we created a sparse matrix of 263 (or 264 or 265??) predictors. This was fed into <strong>Random Choice, Logistic Regression, Support Vector Machines (SVM), and Gradient Boosted Tree Ensembles (via XGBoost)</strong>.
+  Surprisingly, we obtained significant increases in the quality of our accuracy, AUC, and (decreased) train and test mean error through the incorporation of <strong>4 normalized username and hashtag features</strong>. These 4 extra predictors were obtained by calculating the relative frequency of positive and negative usernames and hashtags for all unique instances of each.
 
-## 4 Ensemble
+<strong>I think the beginning of this section (3) needs to be cut and put here after explaining the delta-TF-IDF. Also, the first and second paragraphs of this section (3) have stuff about future direction that we need to put in that section (at the end).</strong>
 
-?
+# 4 Model Formations and Results
 
-## 5 Model Analysis and Fine Tuning 
+All models were analyzed using **5-Fold CV** to optimize mean error and / or AUC: 
 
-#### 5.1 Feature Selection and Tuning
+```{r, echo = FALSE}
+head(models.df)
+```
+
+### 4.1 Random Forest
+
+  We used random forest approaches to perform initial model runs, as well as feature importance, with our 290 generated delta TF-IDF predictors. Feature importance analysis with random forest and XGBoost approaches involved examining the *gain* of each feature as an average of net total over all node splits. Gain is measured as the decrease in misclassifications - or recipricol of increase in correct classification.
+
+### 4.2 Compare XGBoost
+
+  We used XGBoost with optimal parameter tuning on 300
+randomly generated values within specified bounds (parameter-specific).
+Through these randomly generated parameter sets, we ran 5-fold Cross-Validation
+with a 20% subsample of the total labeled data. Out of this 20% subsample
+we used a 90% / 10% split for training and testing in-group, respectively.
+Our 300 random parameter searches, via grid search methods from the <code>Caret</code>
+package in <code>R</code>, were performed in sets of 50 so we could ultimately
+rank and analyze 6 different sets of optimal parameters. The best set, in terms of
+maximum AUC values, was used to generate our most accurate model by total accuracy.
+
+The results and comparison of several models are summarized in the table below:
+
+```{r, echo = FALSE}
+head(CV.df)
+```
+
+### 4.3 Linear and Gaussian K-SVM
+
+<strong>Not sure if we are including this section really? Or I guess at the least we can say we ran them etc.</strong>
+
+# 5 Model Analysis and Fine Tuning
+
+### 5.1 Feature Selection and Tuning
 
 We performed several optimization and parameter tuning tricks, including:
 
@@ -102,10 +129,26 @@ We performed several optimization and parameter tuning tricks, including:
 
 3. <strong>K-means clustering</strong> on relative feature-based gain (or loss) - this is particularly useful for _post facto_ feature selection, augmentation, and further ensemble-level engineering
 
-4. <strong>K-folds Cross-Validation</strong> for feature and model selection - this is performed by randomly extracting the training dataset into <strong>K</strong> number of subsets, training the model on that subset, and then testing on the remaining training dataset   
+4. <strong>K-folds Cross-Validation</strong> for feature and model selection - this is performed by randomly extracting the training dataset into <strong>K</strong> number of subsets, training the model on that subset, and then testing on the remaining training dataset
 
-## 6 Future Ideas
+# 6 Conclusion and Future Ideas
 
-There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).
+<strong>Other future ideas: </strong>
+
+* one-hot-encode: for XGBoost features - known to do well for sparse matrix classification
+ [Check this out...](http://xgboost.readthedocs.org/en/latest/R-package/discoverYourData.html)
+
+* ensemble combination of predictions with: average, geometric average, majority rule
+
+  There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).
+
+
+## Appendix
+
+[1] http://www.internetlivestats.com/twitter-statistics/
+
+[2] https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews/data
+
+[3] XGBoost: https://github.com/dmlc/xgboost
 
 ##### END #####

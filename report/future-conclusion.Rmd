@@ -5,6 +5,8 @@ date: "April 27, 2016"
 output: pdf_document
 ---
 
+
+
 ## 1 Introduction
 
 #### 1.1 Overview
@@ -33,7 +35,7 @@ Method Y described above. Here we maybe explain how we cleaned the data and what
 
 E.g. we found that username "@mileycirus" was the 2nd most popular username in negative tweets.
 
-## 3 Cross Validation and Model Formation  
+## 3 Cross Validation and Model Formation
 
 #### 3.1 Feature Selection Overview
 
@@ -43,7 +45,7 @@ One possible explanation for the discrepancy in sentiment prediction may be due 
 
 On the other hand, we used normalized username and hashtag occurrence scores for positive and negative features. These four features were far less sparse than the Bag-of-Words and TF-IDF generated features - i.e. far less observations with <strong>0</strong>. This can bias the importance of those features in the decrease in misclassification (loss, similar principle can apply for other forms of optimization) for each node split.
 
-#### 3.2 Overview of TF-IDF Method  
+#### 3.2 Overview of TF-IDF Method
 
 We can apply the <strong>TF-IDF</strong> principle to the top occurrences of both usernames and hashtags to get the corresponding sparse features in the same format as the 118 word frequencies. We determined the number of important usernames and hashtags by analyzing the total number of unique values, e.g. unique usernames in all tweets, and finding the total number of occurrences per element. From this data exploration method we found that the username <code>@mileycirus</code> appeared as the second most frequented tweeted username in all negative tweets. The top three negatively tweeted usernames appeared more than 1,000 times but dropped significantly by the fourth or fifth most population negative username. We were able to pick the top 50 usernames based on occurrences in positive, negative, or all tweets. Similarly, we found the top 50 hashtags. These top users and hashtags were fed into the TF-IDF algorithms we created as terms and their corresponding sparse predictors were augmented to the data as features.
 
@@ -53,7 +55,7 @@ From the 118 word frequencies, 50 usernames, 50 hashtags, and an additional 45 _
 
 ?
 
-## 5 Model Analysis and Fine Tuning 
+## 5 Model Analysis and Fine Tuning
 
 #### 5.1 Feature Selection and Tuning
 
@@ -65,11 +67,11 @@ We performed several optimization and parameter tuning tricks, including:
 
 3. <strong>K-means clustering</strong> on relative feature-based gain (or loss) - this is particularly useful for _post facto_ feature selection, augmentation, and further ensemble-level engineering
 
-4. <strong>K-folds Cross-Validation</strong> for feature and model selection - this is performed by randomly extracting the training dataset into <strong>K</strong> number of subsets, training the model on that subset, and then testing on the remaining training dataset   
+4. <strong>K-folds Cross-Validation</strong> for feature and model selection - this is performed by randomly extracting the training dataset into <strong>K</strong> number of subsets, training the model on that subset, and then testing on the remaining training dataset
 
 ## 6 Future Ideas
 
-There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).   
+There are several steps and ideas we had for future direction with this project. The two most obvious are to i) redefine our term use in the <strong>TF-IDF</strong> algorithm and ii) further our feature and model selection and tuning methods towards an exhaustive search of both. The former idea could be done by adjusting our idea of *words* and redefining the terms we use to be some set of characters or relative word groupings, perhaps through an <strong>n-gram</strong> approach. The latter idea could be done through the use of the _Caret_ library in _R_ to perform an exhaustive grid search. Another approach could be to perform adaptive solvers either _post facto_ or during iteration boosting - such as <strong>particle swarm optimization</strong> or other forms of evolutionary algorithms. These approaches may be able to adaptively solve for the optimization problem of misclassification or accuracy gain / loss in a non-parametric fashion. I.e. such adaptive solvers in optimization problems do not assume distributions or relationships between parameters and can be used to search through the feature dimensional space for non-linear solutions. This could of course be performed in a different route with <strong>kernel</strong> based approaches of dimensional reduction, such as kernel-PCA and kernel-SVM (NOTE: some of these approaches were touched on or implemented fully in our report above).
 
 
 ##### END #####

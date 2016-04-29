@@ -1,0 +1,79 @@
+## 1 Machine Learning Notes / Overview
+
+
+#### 1.1 - sentiment analysis overview
+
+    * do complete report writeup
+
+    * send to Paul + Chris and ask for feedback
+
+#### 1.2 - create sample code script for our project
+
+
+#### 1.3 - create reference file for our project
+
+    * this is the appendix, reference papers, reference methods,
+        reference blog posts, etc
+
+#### 1.4 - one-hot-encode
+
+    * perhaps we should use one-hot-encoding methods for our data and re-run?
+
+    * [Check this out...](http://xgboost.readthedocs.org/en/latest/R-package/discoverYourData.html)
+
+#### 1.5 - create table for report
+
+    * includes the following AUC + accuracy values:
+
+```
+    # library(randomForest)
+    We used random forest approaches to perform initial model runs, as well as feature importance, with our 290 generated delta TF-IDF predictors. Feature importance analysis with random forest and XGBoost approaches involved examining the *gain* of each feature as an average of net total over all node splits. Gain is measured as the decrease in misclassifications - or recipricol of increase in correct classification.
+
+
+    <figure>
+        <a href="../images/example1.png"><img src="../images/example1.png"></a>
+        <figcaption><a href="" title="Example fig. 1">Example fig. 1</a>.</figcaption>
+    </figure>
+
+
+    # library(xgboost)
+    We used XGBoost with optimal parameter tuning on 300
+    randomly generated values within specified bounds (parameter-specific).
+    Through these randomly generated parameter sets, we ran 5-fold Cross-Validation
+    with a 20% subsample of the total labeled data. Out of this 20% subsample
+    we used a 90% / 10% split for training and testing in-group, respectively.
+    Our 300 random parameter searches, via grid search methods from the <code>Caret</code>
+    package in <code>R</code>, were performed in sets of 50 so we could ultimately
+    rank and analyze 6 different sets of optimal parameters. The best set, in terms of
+    maximum AUC values, was used to generate our most accurate model by total accuracy.
+    The results and comparison of several models are summarized in the table below:
+
+    i) 290 BOW + delta TF-IDF and 4 username + hashtag scores = 294 features
+
+        * 5-Fold CV Accuracy: 0.7724891
+        * 5-Fold CV AUC: 0.8706949
+
+    ii) 20 top features (via feature importance selection) and 4 username + hashtag scores = 24 features
+
+        * 5-Fold CV Accuracy: 0.7429594
+        * 5-fold CV AUC: 0.8410817
+
+    iii) 290 BOW + delta TF-IDF (excluding the 4 features from *i*)
+
+        * 5-Fold CV Accuracy: 0.683828
+        * 5-fold CV AUC: 0.7632195
+
+    iv) 20 top features (excluding the 4 features from *ii*)
+
+        * 5-Fold CV Accuracy: 0.6223154
+        * 5-fold CV AUC: 0.6918399
+
+    <figure>
+        <a href="../images/example1.png"><img src="../images/example1.png"></a>
+        <figcaption><a href="" title="Example fig. 1">Example fig. 1</a>.</figcaption>
+    </figure>
+
+    # library(e1071)
+    # library(kernlab)
+    <strong>NOTE: describe SVM methods here...both linear and radial and Gaussian</strong>
+```

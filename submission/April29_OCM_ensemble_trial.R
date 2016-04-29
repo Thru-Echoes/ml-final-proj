@@ -33,6 +33,11 @@ save(trainIndx.10perc, file = "submission/April29_trainIndx_10perc.rda")
 trainIndx.50perc <- sample(1:nrow(x24.labeled), size = floor(nrow(x24.labeled) * 0.5), replace = F)
 save(trainIndx.50perc, file = "submission/April29_trainIndx_50perc.rda")
 
+load("submission/April29_trainIndx_10perc.rda")
+
+
+load("submission/April29_trainIndx_50perc.rda")
+
 # # # # this creates a subsample of 152k tweets .... split into 80 / 20 train / test or something 
 
 x24.10perc.data <- x24.labeled[trainIndx.10perc, ]
@@ -45,6 +50,8 @@ trainSet <- sample(1:nrow(x24.10perc.data), size = floor(nrow(x24.10perc.data) *
 save(trainSet, file = "submission/April29_80split_10perc.rda")
 
 trainSet <- sample(1:nrow(x24.50perc.data), size = floor(nrow(x24.50perc.data) * 0.8), replace = F)
+
+load("submission/April29_80split_10perc.rda")
 
 Xtrain <- x24.10perc.data[trainSet, ]
 Ytrain <- y.10perc.data[trainSet]
@@ -151,6 +158,11 @@ xgb.param3.yhat.binary <- (as.numeric(pred.param3 > 0.5) != Ytest)
 xgb.param3.yhat.median <- (as.numeric(pred.param3 > median(xgb.param3.yhat)) != Ytest)
 
 # compare results of 2 models to Y-actual 
+compare.xgb.10perc.prob <- data.frame(yhat_xgb1 = xgb.param1.yhat,
+                                 yhat_xgb2 = xgb.param2.yhat,
+                                 yhat_xgb3 = xgb.param3.yhat,
+                                 yactual = Ytest)
+
 compare.xgb.10perc <- data.frame(yhat_xgb1 = xgb.param1.yhat.binary,
                                  yhat_xgb2 = xgb.param2.yhat.binary,
                                  yhat_xgb3 = xgb.param3.yhat.binary,
@@ -163,15 +175,15 @@ compare.xgb.10perc <- data.frame(yhat_xgb1 = xgb.param1.yhat.binary,
 
 # SVM with C = 0.1 and Sigma = 0.1 
 library(e1071)
-svm.c.01 <- svm(x = as.matrix(Xtrain), y = Ytrain, 
-                cost = 0.1, kernel = "linear", scale = FALSE)
+#svm.c.01 <- svm(x = as.matrix(Xtrain), y = Ytrain, 
+#                cost = 0.1, kernel = "linear", scale = FALSE)
 
-save(svm.c.01, file = "submission/April29_svm_c0.1_linear.rda")
+#save(svm.c.01, file = "submission/April29_svm_c0.1_linear.rda")
 
-svm.c.01.pred <- predict(svm.c.01, as.matrix(Xtest))
-save(svm.c.01.pred, file = "submission/April29_svm_c0.1_linear_pred.rda")
+#svm.c.01.pred <- predict(svm.c.01, as.matrix(Xtest))
+#save(svm.c.01.pred, file = "submission/April29_svm_c0.1_linear_pred.rda")
 
-svm.c.01.radial <- svm(x = as.matrix(Xtrain), y = ytrain, 
+svm.c.01.radial <- svm(x = as.matrix(Xtrain), y = Ytrain, 
                        cost = 0.1, sigma = 0.1, kernel = "radial", scale = FALSE)
 
 save(svm.c.01.radial, file = "submission/April29_svm_c0.1_radial.rda")
@@ -181,15 +193,15 @@ save(svm.c.01.rPred, file = "submission/April29_svm_c0.1_radial_pred.rda")
 
 # Now c = 1
 
-svm.c.1 <- svm(x = as.matrix(Xtrain), y = Ytrain, 
-                cost = 1, kernel = "linear", scale = FALSE)
+#svm.c.1 <- svm(x = as.matrix(Xtrain), y = Ytrain, 
+#                cost = 1, kernel = "linear", scale = FALSE)
 
-save(svm.c.1, file = "submission/April29_svm_c1_linear.rda")
+#save(svm.c.1, file = "submission/April29_svm_c1_linear.rda")
 
-svm.c.1.pred <- predict(svm.c.1, as.matrix(Xtest))
-save(svm.c.1.pred, file = "submission/April29_svm_c1_linear_pred.rda")
+#svm.c.1.pred <- predict(svm.c.1, as.matrix(Xtest))
+#save(svm.c.1.pred, file = "submission/April29_svm_c1_linear_pred.rda")
 
-svm.c.1.radial <- svm(x = as.matrix(Xtrain), y = ytrain, 
+svm.c.1.radial <- svm(x = as.matrix(Xtrain), y = Ytrain, 
                        cost = 1, sigma = 0.1, kernel = "radial", scale = FALSE)
 
 save(svm.c.1.radial, file = "submission/April29_svm_c1_radial.rda")
@@ -208,5 +220,18 @@ compare.xgb.svm.10perc <- data.frame(yhat_lin_svm0.1 = svm.c.01.pred,
                                  yhat_xgb3 = xgb.param3.yhat,
                                  yactual = Ytest)
 
+save(compare.xgb.svm.10perc, file = "submission/April29_xgb_svm_pred2.rda")
+compare_xgb_svm_10perc <- compare.xgb.svm.10perc
+write.csv(compare_xgb_svm_10perc, file = "submission/April29_compare_xgb_svm_10perc2.csv")
+
+compare.xgb.svm.10perc <- data.frame(yhat_lin_svm0.1 = svm.c.01.pred,
+                                     yhat_lin_svm1 = svm.c.1.pred,
+                                     yhat_xgb1 = xgb.param1.yhat,
+                                     yhat_xgb2 = xgb.param2.yhat,
+                                     yhat_xgb3 = xgb.param3.yhat,
+                                     yactual = Ytest)
+
 
 compare.xgb.svm.10perc[1:100, ]
+
+save(compare.xgb.svm.10perc, file = "submission/April29_xgb_svm_pred.rda")

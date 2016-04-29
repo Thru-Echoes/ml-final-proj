@@ -63,7 +63,7 @@ save(svm.c.01, file = "submission/April28_svm_c0.1_linear.rda")
 svm.c.01.pred <- predict(svm.c.01, as.matrix(Xtest))
 save(svm.c.01.pred, file = "submission/April28_svm_c0.1_linear_pred.rda")
 
-svm.c.01.radial <- svm(x = as.matrix(Xtrain), y = ytrain, cost = 0.1, kernel = "radial")
+svm.c.01.radial <- svm(x = as.matrix(Xtrain), y = ytrain, cost = 0.1, sigma = 0.1, kernel = "radial")
 save(svm.c.01.radial, file = "submission/April28_svm_c0.1_radial.rda")
 
 svm.c.01.rPred <- predict(svm.c.01.radial, as.matrix(Xtest))

@@ -7,6 +7,8 @@
 # 3 - want to try average of each binary pred between yhats 
 # 4 - want to try majority rule for each binary pred between yhats 
 
+require(xgboost)
+
 # load in x24 -> 20 importance features out of 290 + 4 scores 
 load("data/April28_x24_labeled_sign_change.rda")
 load("data/April28_x24_unlabeled_sign_change.rda")
@@ -26,8 +28,10 @@ Ytrain.all <- yLabeled
 # get 10percent of data for ensemble model runs 
 set.seed(123)
 trainIndx.10perc <- sample(1:nrow(x24.labeled), size = floor(nrow(x24.labeled) * 0.1), replace = F)
+save(trainIndx.10perc, file = "submission/April29_trainIndx_10perc.rda")
 
 trainIndx.50perc <- sample(1:nrow(x24.labeled), size = floor(nrow(x24.labeled) * 0.5), replace = F)
+save(trainIndx.50perc, file = "submission/April29_trainIndx_50perc.rda")
 
 # # # # this creates a subsample of 152k tweets .... split into 80 / 20 train / test or something 
 
@@ -38,6 +42,7 @@ x24.50perc.data <- x24.labeled[trainIndx.50perc, ]
 y.50perc.data <- yLabeled[trainIndx.50perc]
 
 trainSet <- sample(1:nrow(x24.10perc.data), size = floor(nrow(x24.10perc.data) * 0.8), replace = F)
+save(trainSet, file = "submission/April29_80split_10perc.rda")
 
 trainSet <- sample(1:nrow(x24.50perc.data), size = floor(nrow(x24.50perc.data) * 0.8), replace = F)
 

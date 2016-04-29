@@ -51,3 +51,20 @@ save(boostModel, yhat, yhatPre.5, accuracy.5, file = "submission/April28_24featu
 
 save(boostModel, yhat, yhatPre.median, accuracy.median, file = "submission/April28_24features_xgb_median_accur.rda")
 
+################ 
+################ TRY SVM - linear - with sign flipped pos username and hashtags 
+################ 
+
+library(e1071)
+
+svm.c.01 <- svm(x = as.matrix(Xtrain), y = ytrain, cost = 0.1, kernel = "linear")
+save(svm.c.01, file = "submission/April28_svm_c0.1_linear.rda")
+
+svm.c.01.pred <- predict(svm.c.01, as.matrix(Xtest))
+save(svm.c.01.pred, file = "submission/April28_svm_c0.1_linear_pred.rda")
+
+svm.c.01.radial <- svm(x = as.matrix(Xtrain), y = ytrain, cost = 0.1, kernel = "radial")
+save(svm.c.01.radial, file = "submission/April28_svm_c0.1_radial.rda")
+
+svm.c.01.rPred <- predict(svm.c.01.radial, as.matrix(Xtest))
+save(svm.c.01.rPred, file = "submission/April28_svm_c0.1_radial_pred.rda")

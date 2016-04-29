@@ -101,6 +101,17 @@ param3 <- list("objective" = "binary:logistic",
                "alpha" = 13.4198)
 nrounds.param3 <- 297
 
+param4 <- list("objective" = "binary:logistic",
+               "max.depth" = 6,
+               "eta" = 0.5,
+               "gamma" = 0,
+               "min_child_weight" = 1,
+               "booster" = "gbtree",
+               "subsample" = 0.5,
+               "colsample_bytree" = 0.5,
+               "lambda" = 1,
+               "alpha" = 0)
+
 xgb.param1 <- xgboost(param = param1, data = as.matrix(Xtrain), 
                       label = Ytrain, nrounds = 100, verbose = 1,
                       print.every.n = 20)
@@ -121,6 +132,98 @@ xgb.param3 <- xgboost(param = param3, data = as.matrix(Xtrain),
 
 #xgb.save(xgb.param3, "submission/April29_xgb_10perc_param3.model")
 #xgb.save(xgb.param3, "submission/April29_xgb_50perc_param3.model")
+
+offset <- 5000
+num_rounds <- 3000
+
+xgtest <- xgb.DMatrix(data = Xtest)
+xgtrain <- xgb.DMatrix(data = as.matrix(Xtrain), label = Ytrain)
+xgval <- xgb.DMatrix(data = as.matrix(Xtrain[1:offset, ]), label = Ytrain[1:offset])
+
+watchlist <- list(val = xgval, train = xgtrain)
+
+num.folds <- 5
+
+xgb.param4.train <- xgb.train(params = param2, data = xgtrain, nround = num_rounds, 
+                              print.ever.n = 20, watchlist = watchlist, early.stop.round = 50,
+                              maximize = FALSE)
+
+xgb.param4.train$bestScore 
+xgb.param4.train$bestInd
+
+#####
+
+# Custom Gini functions for XGB 
+
+SumModelGini <- function(solution, submission) {
+  df = data.frame(solution = solution, submission = submission)
+  df <- df[order(df$submission, decreasing = TRUE),]
+  df$random = (1:nrow(df))/nrow(df)
+  totalPos <- sum(df$solution)
+  df$cumPosFound <- cumsum(df$solution) # this will store the cumulative number of positive examples found (used for computing "Model Lorentz")
+  df$Lorentz <- df$cumPosFound / totalPos # this will store the cumulative proportion of positive examples found ("Model Lorentz")
+  df$Gini <- df$Lorentz - df$random # will store Lorentz minus random
+  return(sum(df$Gini))
+}
+
+NormalizedGini <- function(solution, submission) {
+  SumModelGini(solution, submission) / SumModelGini(solution, solution)
+}
+
+# wrap up into a function to be called within xgboost.train
+evalgini <- function(preds, dtrain) {
+  labels <- getinfo(dtrain, "label")
+  err <- NormalizedGini(as.numeric(labels),as.numeric(preds))
+  return(list(metric = "Gini", value = err))
+}
+
+
+xgb.param4.trainMod <- xgb.train(params = param2, data = xgtrain, feval = evalgini, nround = num_rounds, 
+                              print.ever.n = 20, watchlist = watchlist, early.stop.round = 50,
+                              maximize = TRUE)
+
+xgb.param4.trainMod$bestScore
+xgb.param4.trainMod$bestInd
+
+### Do predictions: 
+
+paramFin <- list("objective" = "binary:logistic",
+               "max.depth" = 6,
+               "eta" = 0.5,
+               "gamma" = 0,
+               "min_child_weight" = 1,
+               "booster" = "gbtree",
+               "subsample" = 0.5,
+               "colsample_bytree" = 0.5,
+               "lambda" = 1,
+               "alpha" = 0)
+
+xgb.fin.notMod <- xgb.train(params = paramFin, data = xgtrain, feval = evalgini, nround = 127, 
+                                 print.ever.n = 20, watchlist = watchlist, early.stop.round = 50,
+                                 maximize = TRUE)
+
+xgb.fin.giniMod <- xgb.train(params = paramFin, data = xgtrain, feval = evalgini, nround = 131, 
+                            print.ever.n = 20, watchlist = watchlist, early.stop.round = 50,
+                            maximize = TRUE)
+
+xgb.fin.notMod.pred <- predict(xgb.fin.notMod, xgtest)
+
+xgb.fin.giniMod.pred <- predict(xgb.fin.giniMod, xgtest)
+
+
+#####
+
+xgb.param4.CV <- xgb.cv(param = param2, data = as.matrix(Xtrain), 
+                      label = Ytrain, nrounds = 4000,
+                      nfold = num.folds, showsd = TRUE, 
+                      verbose = 1, print.every.n = 20,
+                      metrics = list("error", "auc"),
+                      early.stop.round = 100,
+                      prediction = TRUE)
+
+xgb.param4 <- xgboost(param = param2, data = as.matrix(Xtrain), 
+                      label = Ytrain, nrounds = 100, verbose = 1,
+                      print.every.n = 20)
 
 # Now get yhats! 
 

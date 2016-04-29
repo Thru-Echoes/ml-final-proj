@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r include=FALSE}
-#suppressMessages(library(printr))
+library(printr)
 ```
 
 ```{r include=FALSE}
@@ -79,12 +79,14 @@ Although the ensemble approach is very enticing, there may be doubt cast on the 
 
 The top 5 usernames found in the positive tweets:
 ```{r, echo=FALSE}
-head(pos.usernames.subset, 5)
+username.frequencies <- cbind(head(pos.usernames.subset, 5), head(neg.usernames.subset, 5))
+names(username.frequencies) <- c("Positive Username", "Frequency", "Negative Username", "Frequency")
+username.frequencies
 ```
 
 The top 5 usernames found in the negative tweets:
 ```{r, echo=FALSE}
-head(neg.usernames.subset, 5)
+
 ```
 
 ### 2.2 Bag of Words Features

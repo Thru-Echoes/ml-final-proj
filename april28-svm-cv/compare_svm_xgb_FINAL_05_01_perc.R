@@ -27,6 +27,10 @@ trainIndx20.10perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.1), replace
 
 trainIndx20.05perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.05), replace = F)
 
+trainIndx20.01perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.01), replace = F)
+
+trainIndx20.005perc <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.005), replace = F)
+
 x290.testing <- x290[trainIndx290.20, ]
 y290.testing <- yLabeled[trainIndx290.20]
 
@@ -292,6 +296,12 @@ trainIndx <- trainIndx20.20perc
 
 trainIndx <- trainIndx20.10perc
 
+# -or- 
+
+trainIndx <- trainIndx20.005perc
+
+trainIndx <- trainIndx20.01perc
+
 set.seed(2)
 testIndx <- sample(1:nrow(x20), size = floor(nrow(x20) * 0.025), replace = F)
 set.seed(1)
@@ -310,8 +320,15 @@ yTest = as.factor(y)
 
 ####
 
-x <- x20[trainIndx20.05perc, ]
-y <- yLabeled[trainIndx20.05perc]
+x <- x20[trainIndx20.01perc, ]
+y <- yLabeled[trainIndx20.01perc]
+
+x <- x20[trainIndx20.005perc, ]
+y <- yLabeled[trainIndx20.005perc]
+
+# do 90 / 10 split 
+
+trainIndx <- sample(1:nrow(x), size = floor(nrow(x) * 0.9), replace = F)
 
 # do 75 / 25 split 
 
@@ -349,7 +366,7 @@ yTest = as.factor(y)
 #### TRY SOME SVM
 set.seed(1)
 
-seqC = c( 0.01, 0.1, 1, 10, 100)
+seqC = c(0.01, 0.1, 1, 10, 100)
 n.seqC = length(seqC)
 CVerror = rep(NA, times = n.seqC)
 
@@ -436,7 +453,7 @@ save(predict_GSVM, file = "april28-svm-cv/OCM_laptop_20features_predict_GSVM.rda
 set.seed(1)
 
 #seqC = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000)
-seqC = c(0.01, 0.1, 1, 10, 100)
+seqC = c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1)
 n.seqC = length(seqC)
 CVerror = rep(NA, times = n.seqC)
 
@@ -446,30 +463,30 @@ for (i in 1:n.seqC) {
   svmCV = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type="C-svc", 
                kernel="vanilladot", scaled = c(), C = seqC[i], cross = 5)
   CVerror[i] = svmCV@cross
-  fileIter <- paste("05perc_CVerror_lin", i, sep = "_")
+  fileIter <- paste("01perc_CVerror_lin", i, sep = "_")
   rdaLoc <- paste(fileIter, ".rda", sep = "")
-  csvLoc <- paste(fileIter, ".csv", sep = "")
-  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
-  save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
+  #csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(svmCV, file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+ # save(CVerror[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
 }
 
-save(CVerror, "april28-svm-cv/April28_20features_Lin.SVM_05perc_CVerror.rda")
+save(CVerror, file = "april28-svm-cv/April28_20features_Lin.SVM_01perc_CVerror.rda")
 
 minC_LinearSVM = min(seqC[which.min(CVerror)])
 train_LinearSVM = ksvm(xTrain, yTrain, type="C-svc", 
                        kernel="vanilladot", scaled = c(), C = minC_LinearSVM)
-predict_LinearSVM = predict(train_LinearSVM, newdata = xTest[testIndx, ])
+predict_LinearSVM = predict(train_LinearSVM, newdata = xTest[-trainIndx, ])
 
-save(minC_LinearSVM, file = "april28-svm-cv/April28_20features_05perc_minC_LinearSVM.rda")
-save(train_LinearSVM, file = "april28-svm-cv/April28_20features_05perc_train_LinearSVM.rda")
-save(predict_LinearSVM, file = "april28-svm-cv/April28_20features_05perc_predict_LinearSVM.rda")
+save(minC_LinearSVM, file = "april28-svm-cv/April28_20features_01perc_minC_LinearSVM.rda")
+save(train_LinearSVM, file = "april28-svm-cv/April28_20features_01perc_train_LinearSVM.rda")
+save(predict_LinearSVM, file = "april28-svm-cv/April28_20features_01perc_predict_LinearSVM.rda")
 
 
 ##Perform Gaussian kernel SVM modeling and prediction.
 #seqC = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
-seqC = c(0.01, 0.1, 1, 10, 100)
+seqC = c(0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1)
 #seqSigma = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
-seqSigma = c(0.01, 0.1, 1, 10, 100)
+seqSigma = c(0.001, 0.01, 0.1, 1, 10, 100)
 
 permuPar = expand.grid(seqC, seqSigma)
 n.permuPar = nrow(permuPar)
@@ -484,31 +501,31 @@ for (i in 1:n.permuPar) {
                kernel ="rbfdot", scaled = c(), C = permuPar[i, 1], cross = 5, 
                kpar = list(sigma = permuPar[i , 2]))
   CVError.GSVM[i] = svmCV@cross
-  fileIter <- paste("05perc_CVerror_gaussian", i, sep = "_")
+  fileIter <- paste("01perc_CVerror_gaussian", i, sep = "_")
   rdaLoc <- paste(fileIter, ".rda", sep = "")
-  csvLoc <- paste(fileIter, ".csv", sep = "")
-  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
-  save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
+  #csvLoc <- paste(fileIter, ".csv", sep = "")
+  save(svmCV, file = paste("april28-svm-cv/SVM_CV_RDA/", rdaLoc, sep = ""))
+  #save(CVError.GSVM[i], file = paste("april28-svm-cv/SVM_CV_CSV/", csvLoc, sep = ""))
 }
 
-save(CVError.GSVM, "april28-svm-cv/April28_20features_05perc_GSVM_CVerror.rda")
+save(CVError.GSVM, file = "april28-svm-cv/April28_20features_01perc_GSVM_CVerror.rda")
 
 minC_GSVM = permuPar[min(which.min(CVError.GSVM)), 1]
 minSigma_GSVM = permuPar[min(which.min(CVError.GSVM)), 2]
 min_GSVM = c(minC_GSVM, minSigma_GSVM)
 
-save(minC_GSVM, "april28-svm-cv/April28_20features_05perc_minC_GSVM.rda")
-save(minSigma_GSVM, "april28-svm-cv/April28_20features_05perc_minSigma_GSVM.rda")
+save(minC_GSVM, file = "april28-svm-cv/April28_20features_01perc_minC_GSVM.rda")
+save(minSigma_GSVM, file = "april28-svm-cv/April28_20features_01perc_minSigma_GSVM.rda")
 
 train_GSVM = ksvm(xTrain[trainIndx, ], yTrain[trainIndx], type = "C-svc", 
                   kernel = "rbfdot", scaled = c(), C = minC_GSVM, 
                   kpar = list(sigma = minSigma_GSVM))
 
-predict_GSVM = predict(train_GSVM, newdata = xTest[testIndx, ])
+predict_GSVM = predict(train_GSVM, newdata = xTest[-trainIndx, ])
 
-save(min_GSVM, file = "april28-svm-cv/April28_20features_05perc_min_GSVM.rda")
-save(train_GSVM, file = "april28-svm-cv/April28_20features_05perc_train_GSVM.rda")
-save(predict_GSVM, file = "april28-svm-cv/April28_20features_05perc_predict_GSVM.rda")
+save(min_GSVM, file = "april28-svm-cv/April28_20features_01perc_min_GSVM.rda")
+save(train_GSVM, file = "april28-svm-cv/April28_20features_01perc_train_GSVM.rda")
+save(predict_GSVM, file = "april28-svm-cv/April28_20features_01perc_predict_GSVM.rda")
 
 ########## OLD ##########
 ########## OLD ##########
